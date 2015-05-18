@@ -18,6 +18,7 @@ var hook = function(req,res,key){
 
 var github = function(payload, localToken){
 	// TODO: Only acknowledge pushes to the "Master" branch.
+	console.log(payload)
 	var commits = payload.commits
 	newChanges = []
 	commits.forEach(function(commit, index, commits){
@@ -37,32 +38,34 @@ var github = function(payload, localToken){
 
 }
 
-var parseCSS = function(files,commitUrl,cb){
+var parseCSS = function(commits,commitUrl,cb){
 	var comind = 0;
 	features = [];
-	commitDone = function(usage){
-		if(usage){
-			features.push(usage)
-		}
-		if(comind==0){
+	var commitDone = function(){
+		comind--;
+		if(comind<1){
 			cb(features);
 		}
 	}
+	var addFeature = function(usage){
+		features.push(usage)
+	}
+		
 	commits.forEach(function(commit,index){
 		comind++;
 		if(path.extname(commit)=='.css'){
-			var thisUrl=url+commit
+			var thisUrl=commitUrl+commit
 			request({url:thisUrl,headers: {'User-Agent': 'shouldiuse'}}, function(err,res,body){
 				var body = JSON.parse(body)
-				if(body.type!=file){
-					comind--;
+				if(body.type!=="file"){
 					commitDone()
 				}
 				contents= new Buffer(body.content, 'base64')
 				contents = contents.toString();
-				postCSS(doiuse({
-					onFeatureUsage: commitDone
-				})).process(contents)
+				postcss(doiuse({
+					browserSelection: ['ie >= 8', '> 1%'],
+					onFeatureUsage: addFeature
+				})).process(contents.replace(/\r?\n|\r/g," ")).then(function(res){commitDone()});
 			})
 		}
 	})
