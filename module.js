@@ -68,4 +68,3 @@ var renderComment = function(url,file,comment,line,token){
 }
 
 exports.hook = hook
-
