@@ -15,4 +15,4 @@ When you push code to your repository, YouShouldUse scans CSS files in the new
 commits.
 
 YouShouldUse runs doiuse against the CSS files in the pull request and adds a
-comment with the report results. 
+comment with the report results.
