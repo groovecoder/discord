@@ -18,5 +18,9 @@
         "json": "^9.0.1",
         "postcss": "^4.1.11",
         "request": "^2.40.0"
+    },
+    "devDependencies": {
+        "gulp": "3.8.11",
+        "gulp-jshint": "1.10.0"
     }
 }
