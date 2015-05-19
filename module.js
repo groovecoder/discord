@@ -34,41 +34,42 @@ var github = function(payload, localToken){
 		});
 	});
 	var commitUrl = payload.repository.contents_url.replace('{+path}','');
-	parseCSS(newChanges,commitUrl,function(usageInfo){console.log(usageInfo)})
+	var commentUrl = payload.repository.comment_url.replace('{/sha}',payload.head_commit.id);
+	parseCSS(newChanges,commitUrl,localToken,function(usageInfo){console.log(usageInfo)})
 
 }
 
-var parseCSS = function(commits,commitUrl,cb){
-	var comind = 0;
-	features = [];
-	var commitDone = function(){
-		comind--;
-		if(comind<1){
-			cb(features);
-		}
-	}
-	var addFeature = function(usage){
-		features.push(usage)
-	}
-		
+var parseCSS = function(commits,commitUrl,commentUrl,token,cb){
 	commits.forEach(function(commit,index){
-		comind++;
 		if(path.extname(commit)=='.css'){
 			var thisUrl=commitUrl+commit
 			request({url:thisUrl,headers: {'User-Agent': 'shouldiuse'}}, function(err,res,body){
+				var features=[]
+				var addFeature=function(func){
+					console.log(func)
+					features.push(func)
+				}
 				var body = JSON.parse(body)
 				if(body.type!=="file"){
-					commitDone()
+					return;
 				}
 				contents= new Buffer(body.content, 'base64')
-				contents = contents.toString();
 				postcss(doiuse({
 					browserSelection: ['ie >= 8', '> 1%'],
 					onFeatureUsage: addFeature
-				})).process(contents.replace(/\r?\n|\r/g," ")).then(function(res){commitDone()});
+				})).process(contents,{from:"/"+commit}).then(function(res){
+					var featureMessage = ""
+					features.forEach(function(feature,index){
+						renderComment(commentUrl,commit,feature.message,feature.usage.source.start.line,token)
+					})
+				});
 			})
 		}
 	})
+}
+
+var renderComment = function(url,file,comment,line,token){
+	request({url:url,method:"POST",headers:{"User-Agent":"github-cleanpr", "Authorization": localToken},body:JSON.stringify({body:comment,path:file,line:line})},function(err,res,body){});
 }
 			
 exports.hook = hook
