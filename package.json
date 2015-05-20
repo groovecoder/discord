@@ -1,7 +1,5 @@
 {
     "name": "YouShouldUse",
-    "version": "0.0.0",
-    "description": "",
     "main": "app.js",
     "private": true,
     "scripts": {
