@@ -13,7 +13,6 @@ var hook = function(req, res) {
 
 var github = function(payload, localToken) {
     // TODO: Only acknowledge pushes to the "Master" branch.
-    console.log(payload);
     var commitUrl = payload.repository.commits_url.replace('{/sha}', '/' + payload.head_commit.id);
     request({
         url: commitUrl,
@@ -24,7 +23,6 @@ var github = function(payload, localToken) {
         var parsedBody = JSON.parse(body);
         var files = parsedBody.files;
         parseCSS(files, commitUrl, localToken, function(usageInfo) {
-            console.log(usageInfo);
         });
     });
 };
@@ -42,7 +40,6 @@ var parseCSS = function(files, commitUrl, token, cb) {
             }, function(err, res, body) {
                 var addFeature = function(feature) {
                     var diffIndex = parseDiff(feature, file);
-                    console.log(diffIndex);
                     renderComment(commentUrl, file.filename, feature.message, diffIndex, token);
                 };
                 contents = body;
@@ -60,12 +57,6 @@ var parseCSS = function(files, commitUrl, token, cb) {
 };
 
 var renderComment = function(url, file, comment, position, token) {
-    console.log('renderingcomment');
-    console.log(url);
-    console.log(file);
-    console.log(comment);
-    console.log(position);
-    console.log(token);
     request({
         url: url,
         method: "POST",
@@ -80,7 +71,6 @@ var renderComment = function(url, file, comment, position, token) {
         })
     }, function(err, res, body) {
         console.log(err);
-        console.log(body);
     });
 };
 
