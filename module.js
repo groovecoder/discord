@@ -48,7 +48,7 @@ var parseCSS = function(commits, commitUrl, commentUrl, token, cb) {
             }, function(err, res, body) {
                 var features = [];
                 var addFeature = function(feature) {
-                    renderComment(commentUrl, commit, feature.message, feature.usage.source.start.line, token);
+                    features.push(feature);
                 };
                 var parsedBody = JSON.parse(body);
                 if (parsedBody.type !== "file") {
@@ -60,7 +60,13 @@ var parseCSS = function(commits, commitUrl, commentUrl, token, cb) {
                     onFeatureUsage: addFeature
                 })).process(contents, {
                     from: "/" + commit
-                }).then(function(res) {});
+                }).then(function(res) {
+                    var featureMessage = "";
+                    features.forEach(function(feature, index) {
+                        featureMessage = featureMessage + feature.message + '\n';
+                    });
+                    renderComment(commentUrl, commit, featureMessage, 0, token);
+                });
             });
         }
     });
