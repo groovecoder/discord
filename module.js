@@ -13,7 +13,6 @@ var hook = function(req, res) {
 
 var github = function(payload, localToken) {
     // TODO: Only acknowledge pushes to the "Master" branch.
-    console.log(payload);
     var commits = payload.commits;
     newChanges = [];
     commits.forEach(function(commit, index, commits) {
@@ -30,10 +29,7 @@ var github = function(payload, localToken) {
     });
     var commitUrl = payload.repository.contents_url.replace('{+path}', '');
     var commentUrl = payload.repository.commits_url.replace('{/sha}', '/' + payload.head_commit.id + '/comments');
-    parseCSS(newChanges, commitUrl, commentUrl, localToken, function(usageInfo) {
-        console.log(usageInfo);
-    });
-
+    parseCSS(newChanges, commitUrl, commentUrl, localToken);
 };
 
 var parseCSS = function(commits, commitUrl, commentUrl, token, cb) {
@@ -73,12 +69,6 @@ var parseCSS = function(commits, commitUrl, commentUrl, token, cb) {
 };
 
 var renderComment = function(url, file, comment, line, token) {
-    console.log('renderingcomment');
-    console.log(url);
-    console.log(file);
-    console.log(comment);
-    console.log(line);
-    console.log(token);
     request({
         url: url,
         method: "POST",
