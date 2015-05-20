@@ -2,7 +2,8 @@ var request = require('request');
 var diff = require('./diffParse');
 var postcss = require('postcss');
 var doiuse = require('doiuse');
-var path = require('path'); var token = "token " + process.env.OAUTH_TOKEN;
+var path = require('path'); 
+var token = "token " + process.env.OAUTH_TOKEN;
 
 var hook = function(req, res) {
     var localToken = token;
