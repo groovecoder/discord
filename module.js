@@ -40,7 +40,8 @@ var parseCSS = function(files, commitUrl, token, cb) {
             }, function(err, res, body) {
                 var addFeature = function(feature) {
                     var diffIndex = parseDiff(feature, file);
-                    renderComment(commentUrl, file.filename, feature.message, diffIndex, token);
+                    var comment = feature.featureData.title + ' not supported by: ' + feature.featureData.missing;
+                    renderComment(commentUrl, file.filename, comment, diffIndex, token);
                 };
                 contents = body;
                 postcss(doiuse({
