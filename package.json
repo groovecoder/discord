@@ -5,7 +5,7 @@
     "main": "app.js",
     "private": true,
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "test": "./gulp test"
     },
     "author": "",
     "license": "MPL-2.0",
