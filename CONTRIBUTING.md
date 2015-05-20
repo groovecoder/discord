@@ -1,8 +1,8 @@
-# Running tests
+# Submitting a pull request
 
-Before submitting your pull request, run tests locally to be sure that
-everything looks good.
+Before submitting a pull request, run the following commands to test your
+changes and spruce things up.
 
 1. `npm install`
 2. `./gulp test`
-2. `./gulp beautify`
+3. `./gulp beautify`
