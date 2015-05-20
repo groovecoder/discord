@@ -1,8 +1,8 @@
 var request = require('request');
+var diff = require('./diffParse');
 var postcss = require('postcss');
 var doiuse = require('doiuse');
 var path = require('path');
-
 var token = "token " + process.env.OAUTH_TOKEN;
 
 var hook = function(req, res) {
@@ -14,70 +14,57 @@ var hook = function(req, res) {
 var github = function(payload, localToken) {
     // TODO: Only acknowledge pushes to the "Master" branch.
     console.log(payload);
-    var commits = payload.commits;
-    newChanges = [];
-    commits.forEach(function(commit, index, commits) {
-        commit.added.forEach(function(add, id) {
-            if (newChanges.indexOf(add) === -1) {
-                newChanges.push(add);
-            }
-        });
-        commit.modified.forEach(function(add, id) {
-            if (newChanges.indexOf(add) === -1) {
-                newChanges.push(add);
-            }
+    var commitUrl = payload.repository.commits_url.replace('{/sha}', '/' + payload.head_commit.id);
+    request({
+        url: commitUrl,
+        headers: {
+            'User-Agent': 'shouldiuse'
+        }
+    }, function(err, res, body) {
+        var parsedBody = JSON.parse(body);
+        var files = parsedBody.files;
+        parseCSS(files, commitUrl, localToken, function(usageInfo) {
+            console.log(usageInfo);
         });
     });
-    var commitUrl = payload.repository.contents_url.replace('{+path}', '');
-    var commentUrl = payload.repository.commits_url.replace('{/sha}', '/' + payload.head_commit.id + '/comments');
-    parseCSS(newChanges, commitUrl, commentUrl, localToken, function(usageInfo) {
-        console.log(usageInfo);
-    });
-
 };
 
-var parseCSS = function(commits, commitUrl, commentUrl, token, cb) {
-    commits.forEach(function(commit, index) {
-        if (path.extname(commit) == '.css') {
-            var thisUrl = commitUrl + commit;
+var parseCSS = function(files, commitUrl, token, cb) {
+    var commentUrl = commitUrl + '/comments';
+    files.forEach(function(file, index) {
+        if (path.extname(file.filename) == '.css') {
+            var rawUrl = file.raw_url;
             request({
-                url: thisUrl,
+                url: rawUrl,
                 headers: {
                     'User-Agent': 'shouldiuse'
                 }
             }, function(err, res, body) {
-                var features = [];
                 var addFeature = function(feature) {
-                    features.push(feature);
+                    var diffIndex = parseDiff(feature, file);
+                    console.log(diffIndex);
+                    renderComment(commentUrl, file.filename, feature.message, diffIndex, token);
                 };
-                var parsedBody = JSON.parse(body);
-                if (parsedBody.type !== "file") {
-                    return;
-                }
-                contents = new Buffer(parsedBody.content, 'base64');
+                contents = body;
                 postcss(doiuse({
                     browserSelection: ['ie >= 8', '> 1%'],
                     onFeatureUsage: addFeature
                 })).process(contents, {
-                    from: "/" + commit
+                    from: "/" + file.filename
                 }).then(function(res) {
-                    var featureMessage = "";
-                    features.forEach(function(feature, index) {
-                        featureMessage = featureMessage + feature.message + '\n';
-                    });
-                    renderComment(commentUrl, commit, featureMessage, 0, token);
+                    //renderComment(commentUrl, commit, featureMessage, 0, token);
                 });
             });
         }
     });
 };
 
-var renderComment = function(url, file, comment, line, token) {
+var renderComment = function(url, file, comment, position, token) {
     console.log('renderingcomment');
     console.log(url);
     console.log(file);
     console.log(comment);
-    console.log(line);
+    console.log(position);
     console.log(token);
     request({
         url: url,
@@ -89,7 +76,7 @@ var renderComment = function(url, file, comment, line, token) {
         body: JSON.stringify({
             body: comment,
             path: file,
-            line: line
+            position: position
         })
     }, function(err, res, body) {
         console.log(err);
@@ -97,4 +84,7 @@ var renderComment = function(url, file, comment, line, token) {
     });
 };
 
+var parseDiff = function(feature, file) {
+    return diff.lineToIndex(file.patch, feature.usage.source.start.line);
+};
 exports.hook = hook;
