@@ -2,7 +2,7 @@ var request = require('request');
 var diff = require('./diffParse');
 var postcss = require('postcss');
 var doiuse = require('doiuse');
-var path = require('path'); 
+var path = require('path');
 var token = "token " + process.env.OAUTH_TOKEN;
 
 var hook = function(req, res) {
@@ -22,9 +22,9 @@ var github = function(payload, localToken) {
         }
     }, function(err, res, body) {
         var parsedBody = JSON.parse(body);
-        var files = parsedBody.files
+        var files = parsedBody.files;
         parseCSS(files, commitUrl, localToken, function(usageInfo) {
-             console.log(usageInfo);
+            console.log(usageInfo);
         });
     });
 };
@@ -41,7 +41,7 @@ var parseCSS = function(files, commitUrl, token, cb) {
                 }
             }, function(err, res, body) {
                 var addFeature = function(feature) {
-                    var diffIndex = parseDiff(feature,file);
+                    var diffIndex = parseDiff(feature, file);
                     console.log(diffIndex);
                     renderComment(commentUrl, file.filename, feature.message, diffIndex, token);
                 };
@@ -84,7 +84,7 @@ var renderComment = function(url, file, comment, position, token) {
     });
 };
 
-var parseDiff = function(feature, file){
-    return diff.lineToIndex(file.patch,feature.usage.source.start.line);
-}
+var parseDiff = function(feature, file) {
+    return diff.lineToIndex(file.patch, feature.usage.source.start.line);
+};
 exports.hook = hook;
