@@ -1,7 +1,7 @@
 # YouShouldUse
 
-:bread: YouShouldUse adds comments to GitHub pull requests for CSS code that breaks
-browser compatibility. :bread:
+YouShouldUse adds comments to GitHub pull requests for CSS code that breaks
+browser compatibility.
 
 ## How to add it to your project
 
