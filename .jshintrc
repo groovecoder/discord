@@ -1,0 +1,18 @@
+{
+    "browser": true,
+    "node": true,
+
+    "bitwise": true,
+    "curly": true,
+    "eqeqeq": true,
+    "forin": true,
+    "freeze": true,
+    "indent": 4,
+    "noarg": true,
+    "noempty": true,
+    "nonbsp": true,
+    "quotmark": "single",
+    "strict": true,
+    "undef": true,
+    "unused": "vars"
+}

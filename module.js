@@ -1,9 +1,11 @@
+'use strict';
+
 var request = require('request');
 var diff = require('./diffParse');
 var postcss = require('postcss');
 var doiuse = require('doiuse');
 var path = require('path');
-var token = "token " + process.env.OAUTH_TOKEN;
+var token = 'token ' + process.env.OAUTH_TOKEN;
 
 var hook = function(req, res) {
     var localToken = token;
@@ -30,7 +32,7 @@ var github = function(payload, localToken) {
 var parseCSS = function(files, commitUrl, token, cb) {
     var commentUrl = commitUrl + '/comments';
     files.forEach(function(file, index) {
-        if (path.extname(file.filename) == '.css') {
+        if (path.extname(file.filename) === '.css') {
             var rawUrl = file.raw_url;
             request({
                 url: rawUrl,
@@ -43,12 +45,12 @@ var parseCSS = function(files, commitUrl, token, cb) {
                     var comment = feature.featureData.title + ' not supported by: ' + feature.featureData.missing;
                     renderComment(commentUrl, file.filename, comment, diffIndex, token);
                 };
-                contents = body;
+                var contents = body;
                 postcss(doiuse({
                     browserSelection: ['ie >= 8', '> 1%'],
                     onFeatureUsage: addFeature
                 })).process(contents, {
-                    from: "/" + file.filename
+                    from: '/' + file.filename
                 }).then(function(res) {
                     //renderComment(commentUrl, commit, featureMessage, 0, token);
                 });
@@ -60,10 +62,10 @@ var parseCSS = function(files, commitUrl, token, cb) {
 var renderComment = function(url, file, comment, position, token) {
     request({
         url: url,
-        method: "POST",
+        method: 'POST',
         headers: {
-            "User-Agent": "github-cleanpr",
-            "Authorization": token
+            'User-Agent': 'github-cleanpr',
+            'Authorization': token
         },
         body: JSON.stringify({
             body: comment,
