@@ -16,3 +16,13 @@ commits.
 
 YouShouldUse runs doiuse against the CSS files in the pull request and adds a
 comment with the report results.
+
+### Configuration
+
+To target only specific browsers, add a `.doiuse` file to the root of your
+repository with autoprefixer-like format. For example:
+
+`ie >= 8, > 1%`
+
+If no `.doiuse` file is present, YouShouldUse will default to testing against
+the two most recent versions of popular browsers.

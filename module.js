@@ -22,13 +22,25 @@ var github = function(payload, localToken) {
     }, function(err, res, body) {
         var parsedBody = JSON.parse(body);
         var files = parsedBody.files;
-        parseCSS(files, commitUrl, localToken, function(usageInfo) {
+        var configMetadataURL = payload.repository.contents_url.replace('{+path}', '.doiuse');
+        request({ url: configMetadataURL, headers: {'User-Agent': 'YouShouldUse'}}, function(err, res, body) {
+            var configMetadata = JSON.parse(body);
+            var config = ['last 2 versions'];
+
+            if(configMetadata.content) {
+                var configMetadataContent = new Buffer(configMetadata.content, 'base64').toString();
+                config = configMetadataContent.replace(/\r?\n|\r/g, '').split(/,\s*/);
+            }
+
+            parseCSS(files, config, commitUrl, localToken, function(usageInfo) {
+            });
         });
     });
 };
 
-var parseCSS = function(files, commitUrl, token, cb) {
+var parseCSS = function(files, config, commitUrl, token, cb) {
     var commentUrl = commitUrl + '/comments';
+
     files.forEach(function(file, index) {
         if (path.extname(file.filename) == '.css') {
             var rawUrl = file.raw_url;
@@ -45,7 +57,7 @@ var parseCSS = function(files, commitUrl, token, cb) {
                 };
                 contents = body;
                 postcss(doiuse({
-                    browserSelection: ['ie >= 8', '> 1%'],
+                    browsers: config,
                     onFeatureUsage: addFeature
                 })).process(contents, {
                     from: "/" + file.filename
