@@ -1,0 +1,11 @@
+{
+  "name": "YouShouldUse",
+  "description": "GitHub webhook for catching browser compatibility issues",
+  "repository": "https://github.com/mdn/YouShouldUse",
+  "keywords": ["github", "compatibility"],
+  "env": {
+      "OAUTH_TOKEN": {
+          "required": true
+      }
+  }
+}
