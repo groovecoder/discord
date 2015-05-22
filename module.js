@@ -19,7 +19,7 @@ var github = function(payload, localToken) {
     request({
         url: commitUrl,
         headers: {
-            'User-Agent': 'shouldiuse'
+            'User-Agent': 'YouShouldUse'
         }
     }, function(err, res, body) {
         var parsedBody = JSON.parse(body);
@@ -37,7 +37,7 @@ var parseCSS = function(files, commitUrl, token, cb) {
             request({
                 url: rawUrl,
                 headers: {
-                    'User-Agent': 'shouldiuse'
+                    'User-Agent': 'YouShouldUse'
                 }
             }, function(err, res, body) {
                 var addFeature = function(feature) {
@@ -64,7 +64,7 @@ var renderComment = function(url, file, comment, position, token) {
         url: url,
         method: 'POST',
         headers: {
-            'User-Agent': 'github-cleanpr',
+            'User-Agent': 'YouShouldUse',
             'Authorization': token
         },
         body: JSON.stringify({
