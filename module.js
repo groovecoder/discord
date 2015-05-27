@@ -15,6 +15,7 @@ var hook = function(req, res) {
 
 var github = function(payload, localToken) {
     // TODO: Only acknowledge pushes to the "Master" branch.
+    console.log(payload.repository.full_name);
     var commitUrl = payload.repository.commits_url.replace('{/sha}', '/' + payload.head_commit.id);
     request({
         url: commitUrl,
@@ -25,17 +26,21 @@ var github = function(payload, localToken) {
         var parsedBody = JSON.parse(body);
         var files = parsedBody.files;
         var configMetadataURL = payload.repository.contents_url.replace('{+path}', '.doiuse');
-        request({ url: configMetadataURL, headers: {'User-Agent': 'YouShouldUse'}}, function(err, res, body) {
+        request({
+            url: configMetadataURL,
+            headers: {
+                'User-Agent': 'YouShouldUse'
+            }
+        }, function(err, res, body) {
             var configMetadata = JSON.parse(body);
             var config = ['last 2 versions'];
 
-            if(configMetadata.content) {
+            if (configMetadata.content) {
                 var configMetadataContent = new Buffer(configMetadata.content, 'base64').toString();
                 config = configMetadataContent.replace(/\r?\n|\r/g, '').split(/,\s*/);
             }
 
-            parseCSS(files, config, commitUrl, localToken, function(usageInfo) {
-            });
+            parseCSS(files, config, commitUrl, localToken, function(usageInfo) {});
         });
     });
 };
