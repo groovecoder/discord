@@ -2,6 +2,7 @@
 
 var request = require('request');
 var diff = require('./diffParse');
+var parseSource = require('./sourceParse');
 var postcss = require('postcss');
 var doiuse = require('doiuse');
 var path = require('path');
@@ -25,17 +26,21 @@ var github = function(payload, localToken) {
         var parsedBody = JSON.parse(body);
         var files = parsedBody.files;
         var configMetadataURL = payload.repository.contents_url.replace('{+path}', '.doiuse');
-        request({ url: configMetadataURL, headers: {'User-Agent': 'YouShouldUse'}}, function(err, res, body) {
+        request({
+            url: configMetadataURL,
+            headers: {
+                'User-Agent': 'YouShouldUse'
+            }
+        }, function(err, res, body) {
             var configMetadata = JSON.parse(body);
             var config = ['last 2 versions'];
 
-            if(configMetadata.content) {
+            if (configMetadata.content) {
                 var configMetadataContent = new Buffer(configMetadata.content, 'base64').toString();
                 config = configMetadataContent.replace(/\r?\n|\r/g, '').split(/,\s*/);
             }
 
-            parseCSS(files, config, commitUrl, localToken, function(usageInfo) {
-            });
+            parseCSS(files, config, commitUrl, localToken, function(usageInfo) {});
         });
     });
 };
@@ -44,6 +49,14 @@ var parseCSS = function(files, config, commitUrl, token, cb) {
     var commentUrl = commitUrl + '/comments';
 
     files.forEach(function(file, index) {
+        var addFeature = function(feature) {
+            var diffIndex = parseDiff(feature, file);
+            var comment = feature.featureData.title + ' not supported by: ' + feature.featureData.missing;
+            renderComment(commentUrl, file.filename, comment, diffIndex, token);
+        };
+        if (path.extname(file.filename) === '.styl') {
+            parseSource.stylus(file, config, addFeature);
+        }
         if (path.extname(file.filename) === '.css') {
             var rawUrl = file.raw_url;
             request({
@@ -52,11 +65,6 @@ var parseCSS = function(files, config, commitUrl, token, cb) {
                     'User-Agent': 'YouShouldUse'
                 }
             }, function(err, res, body) {
-                var addFeature = function(feature) {
-                    var diffIndex = parseDiff(feature, file);
-                    var comment = feature.featureData.title + ' not supported by: ' + feature.featureData.missing;
-                    renderComment(commentUrl, file.filename, comment, diffIndex, token);
-                };
                 var contents = body;
                 postcss(doiuse({
                     browsers: config,

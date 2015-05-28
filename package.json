@@ -6,30 +6,28 @@
         "test": "./gulp test"
     },
     "license": "MPL-2.0",
-    "contributors": [
-        {
-            "name": "Blixa Morgan",
-            "email": "blixa@projectmakeit.com",
-            "url": "http://mrmakeit.me"
-        },
-        {
-            "name": "John Karahalis",
-            "email": "john.karahalis@gmail.com",
-            "url": "https://openjck.com"
-        },
-        {
-            "name": "Luke Crouch",
-            "email": "luke.crouch@gmail.com",
-            "url": "http://groovecoder.com"
-        }
-    ],
+    "contributors": [{
+        "name": "Blixa Morgan",
+        "email": "blixa@projectmakeit.com",
+        "url": "http://mrmakeit.me"
+    }, {
+        "name": "John Karahalis",
+        "email": "john.karahalis@gmail.com",
+        "url": "https://openjck.com"
+    }, {
+        "name": "Luke Crouch",
+        "email": "luke.crouch@gmail.com",
+        "url": "http://groovecoder.com"
+    }],
     "dependencies": {
         "body-parser": "^1.6.6",
         "doiuse": "^0.3.3",
         "express": "^4.8.6",
         "marked": "0.3.3",
         "postcss": "^4.1.11",
-        "request": "^2.40.0"
+        "request": "^2.40.0",
+        "source-map": "^0.4.2",
+        "stylus": "^0.51.1"
     },
     "devDependencies": {
         "gulp": "3.8.11",
