@@ -15,7 +15,7 @@ var hook = function(req, res) {
 
 var github = function(payload, localToken) {
     // TODO: Only acknowledge pushes to the "Master" branch.
-    console.log(payload.repository.full_name);
+    console.log("Repo: "+payload.repository.full_name);
     var commitUrl = payload.repository.commits_url.replace('{/sha}', '/' + payload.head_commit.id);
     request({
         url: commitUrl,
