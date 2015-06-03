@@ -26,3 +26,7 @@ repository with autoprefixer-like format. For example:
 
 If no `.doiuse` file is present, YouShouldUse will default to testing against
 the two most recent versions of popular browsers.
+
+## Reporting problems
+
+YouShouldUse is under heavy development. Please [report any problems on GitHub](https://github.com/mdn/YouShouldUse/issues).
