@@ -3,11 +3,15 @@
 YouShouldUse adds comments to GitHub pull requests for CSS code that breaks
 browser compatibility.
 
-## How to add it to your project
+## Installation
 
-1. Go to Settings, Webhooks & Services, Add Webhook
-2. Payload URL: `http://youshoulduse.herokuapp.com/hook`
-3. Add webhook
+Follow these instructions to add YouShouldUse to your GitHub repository.
+
+1. Navigate to *Settings* > *Webhooks and Services*
+2. Click *Add webhook*
+3. Enter `http://youshoulduse.herokuapp.com/hook` as the Payload URL. Leave all
+   other settings at their default values.
+4. Click *Add webhook*
 
 ## How it works
 
