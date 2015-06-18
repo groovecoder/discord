@@ -1,24 +1,24 @@
 'use strict';
 
-var sourceMap = require('source-map');
-var style = require('stylus');
-var request = require('request');
 var doiuse = require('doiuse');
 var postcss = require('postcss');
+var request = require('request');
+var sourceMap = require('source-map');
+var style = require('stylus');
 
 var stylus = function(file, config, addFeature) {
-    var rawUrl = file.raw_url;
+    var rawURL = file.raw_url;
     request({
-        url: rawUrl,
+        url: rawURL,
         headers: {
             'User-Agent': 'YouShouldUse'
         }
-    }, function(err, res, body) {
+    }, function(error, response, body) {
         var contents = body;
         var stylize = style(contents)
             .set('filename', file.filename)
             .set('sourcemap', {});
-        stylize.render(function(err, css) {
+        stylize.render(function(error, css) {
             var source = new sourceMap.SourceMapConsumer(stylize.sourcemap);
             var onFeatureUsage = function(feature) {
                 var newPos = source.originalPositionFor(feature.usage.source.start);
@@ -32,7 +32,7 @@ var stylus = function(file, config, addFeature) {
                 })).process(css, {
                     from: '/' + file.filename
                 })
-                .then(function(res) {});
+                .then(function(response) {});
         });
     });
 };

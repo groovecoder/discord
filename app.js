@@ -1,11 +1,12 @@
 'use strict';
 
-var express = require('express');
-var app = express();
-var bodyParser = require('body-parser');
-var module = require('./module.js');
-var homepage = require('./homepage.js');
+var homepage = require('./homepage');
+var module = require('./module');
 
+// Set up Express
+var express = require('express');
+var bodyParser = require('body-parser');
+var app = express();
 app.use(bodyParser());
 
 app.get('/', homepage);
