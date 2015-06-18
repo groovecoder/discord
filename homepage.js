@@ -3,7 +3,7 @@
 var fs = require('fs');
 var marked = require('marked');
 
-var landingPage = function(request, response) {
+var homepage = function(request, response) {
     var readmeFile = 'README.md';
     fs.readFile(readmeFile, 'utf8', function(err, readmeContent) {
         var readmeHTML = marked(readmeContent);
@@ -12,4 +12,4 @@ var landingPage = function(request, response) {
     });
 };
 
-module.exports = landingPage;
+module.exports = homepage;
