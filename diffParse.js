@@ -3,13 +3,15 @@
 var lineToIndex = function(diff, lineNumber) {
     var diffIndexes = diff.split('\n');
     var currentLine = 0;
+    var currentIndex, work;
+
     for (var i = 0; i < diffIndexes.length; i++) {
-        var currentIndex = diffIndexes[i];
+        currentIndex = diffIndexes[i];
         if (currentIndex.substring(0, 1) !== '-') {
             currentLine++;
         }
         if (currentIndex.substring(0, 1) === '@') {
-            var work = currentIndex.split('+');
+            work = currentIndex.split('+');
             currentLine = work[1].split(',')[0];
         }
         if (currentLine === lineNumber) {
