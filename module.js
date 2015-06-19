@@ -12,7 +12,7 @@ var productName = 'YouShouldUse';
 
 var hook = function(request, response) {
     var localToken = token;
-    response.send(200, '{ "message": "ok", "result": "ok" }');
+    response.status(200).send('ok');
     github(request.body, localToken);
 };
 
