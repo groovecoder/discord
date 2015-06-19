@@ -14,10 +14,10 @@ the contribution workflow at this point.
 5. Create a test repository which you'll send invalid CSS or Stylus files to,
    which your Discord instance will evaluate. Within that repository:
     1. Navigate to *Settings* > *Webhooks and Services*
-    2. Click *Add webhook*
-    3. Enter `http://{your-heroku-address}.herokuapp.com/hook` as the Payload
-       URL. Leave all other settings at their default values.
-    4. Click *Add webhook*
+    2. Add a webhook
+        * Enter `http://youshoulduse.herokuapp.com/hook` as the Payload URL
+        * Choose to select individual events. Select only *Pull Request*.
+        * Leave all other settings at their default values
 
 When you commit changes to your test repository, your hook should recognize the
 changes and execute Discord on your test repository code!  If warnings are found
