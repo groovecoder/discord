@@ -8,7 +8,8 @@ Follow these instructions to add Discord to your GitHub repository.
 1. Navigate to *Settings* > *Webhooks and Services*
 2. Add a webhook
     * Enter `http://youshoulduse.herokuapp.com/hook` as the Payload URL
-    * Choose to select individual events. Select only *Pull Request*.
+    * Choose to select individual events. Ensure only *Pull Request* is
+      selected.
     * Leave all other settings at their default values
 
 ## How it works
