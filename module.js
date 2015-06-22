@@ -10,53 +10,73 @@ var parseSource = require('./sourceParse');
 var token = 'token ' + process.env.OAUTH_TOKEN;
 var productName = 'Discord';
 
-var hook = function(request, response) {
+var hook = function(httpRequest, response) {
     var localToken = token;
     response.status(200).send('ok');
-    github(request.body, localToken);
+    github(httpRequest, localToken);
 };
 
-var github = function(payload, localToken) {
-    var headCommitURL = payload.repository.commits_url.replace('{/sha}', '/' + payload.head_commit.id);
+var github = function(httpRequest, localToken) {
+    var eventType = httpRequest.headers['x-github-event'];
+    var payload = httpRequest.body;
+    var configMetadataURL = payload.repository.contents_url.replace('{+path}', '.doiuse');
+    var commitsURL, commentURL;
 
-    console.log("Repo: " + payload.repository.full_name);
+    console.log('Repo: ' + payload.repository.full_name);
 
     request({
-        url: headCommitURL,
+        url: configMetadataURL,
         headers: {
             'User-Agent': productName
         }
     }, function(error, response, body) {
-        var parsedBody = JSON.parse(body);
-        var files = parsedBody.files;
-        var configMetadataURL = payload.repository.contents_url.replace('{+path}', '.doiuse');
-        request({
-            url: configMetadataURL,
-            headers: {
-                'User-Agent': productName
-            }
-        }, function(error, response, body) {
-            var configMetadata = JSON.parse(body);
-            var config = ['last 2 versions'];
+        var configMetadata = JSON.parse(body);
+        var config = ['last 2 versions'];
+        var configMetadataContent;
 
-            if (configMetadata.content) {
-                var configMetadataContent = new Buffer(configMetadata.content, 'base64').toString();
-                config = configMetadataContent.replace(/\r?\n|\r/g, '').split(/,\s*/);
-            }
+        if (configMetadata.content) {
+            configMetadataContent = new Buffer(configMetadata.content, 'base64').toString();
 
-            parseCSS(files, config, headCommitURL, localToken, function(usageInfo) {});
-        });
+            // Consider text separated by commas and linebreaks to be individual
+            // options
+            config = configMetadataContent.replace(/\r?\n|\r/g, ', ').split(/,\s*/);
+        }
+
+        if(eventType === 'pull_request') {
+            commitsURL = payload.pull_request.commits_url;
+            commentURL = payload.pull_request.review_comments_url;
+            request({
+                url: commitsURL,
+                headers: {
+                    'User-Agent': productName
+                }
+            }, function(error, response, body) {
+                var commits = JSON.parse(body);
+
+                commits.forEach(function(element, index) {
+                    request({
+                        url: element.url,
+                        headers: {
+                            'User-Agent': productName
+                        }
+                    }, function(error, response, body) {
+                        var commitMeta = JSON.parse(body);
+                        var commitFiles = commitMeta.files;
+                        var commitSHA = commitMeta.sha;
+                        parseCSS(commitFiles, config, commentURL, localToken, function(usageInfo) {}, commitSHA);
+                    });
+                });
+            });
+        }
     });
 };
 
-var parseCSS = function(files, config, headCommitURL, token, cb) {
-    var commentURL = headCommitURL + '/comments';
-
+var parseCSS = function(files, config, commentURL, token, cb, sha) {
     files.forEach(function(file, index) {
         var addFeature = function(feature) {
             var diffIndex = parseDiff(feature, file);
             var comment = feature.featureData.title + ' not supported by: ' + feature.featureData.missing;
-            renderComment(commentURL, file.filename, comment, diffIndex, token);
+            renderComment(commentURL, file.filename, comment, diffIndex, token, sha);
         };
         if (path.extname(file.filename) === '.styl') {
             parseSource.stylus(file, config, addFeature);
@@ -82,7 +102,7 @@ var parseCSS = function(files, config, headCommitURL, token, cb) {
     });
 };
 
-var renderComment = function(url, file, comment, position, token) {
+var renderComment = function(url, file, comment, position, token, sha) {
     request({
         url: url,
         method: 'POST',
@@ -93,6 +113,7 @@ var renderComment = function(url, file, comment, position, token) {
         body: JSON.stringify({
             body: comment,
             path: file,
+            commit_id: sha,
             position: position
         })
     }, function(error, response, body) {
