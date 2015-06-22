@@ -1,5 +1,5 @@
 {
-    "name": "YouShouldUse",
+    "name": "Discord",
     "main": "app.js",
     "private": true,
     "scripts": {

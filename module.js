@@ -8,7 +8,7 @@ var diff = require('./diffParse');
 var parseSource = require('./sourceParse');
 
 var token = 'token ' + process.env.OAUTH_TOKEN;
-var productName = 'YouShouldUse';
+var productName = 'Discord';
 
 var hook = function(request, response) {
     var localToken = token;

@@ -11,7 +11,7 @@ var stylus = function(file, config, addFeature) {
     request({
         url: rawURL,
         headers: {
-            'User-Agent': 'YouShouldUse'
+            'User-Agent': 'Discord'
         }
     }, function(error, response, body) {
         var contents = body;
