@@ -32,4 +32,4 @@ the two most recent versions of popular browsers.
 
 ## Reporting problems
 
-Discord is under heavy development. Please [report any problems on GitHub](https://github.com/mdn/Discord/issues).
+Discord is under heavy development. Please [report any problems on GitHub](https://github.com/mdn/discord/issues).

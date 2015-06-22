@@ -3,7 +3,7 @@ the contribution workflow at this point.
 
 # Setting up your development environment
 
-1. Fork the Discord repository:  https://github.com/mdn/Discord
+1. Fork the Discord repository:  https://github.com/mdn/discord
 2. Create a heroku account and deploy Discord to your account. A helpful guide
    can be found here:
    https://devcenter.heroku.com/articles/getting-started-with-nodejs
