@@ -22,7 +22,10 @@ var github = function(httpRequest, localToken) {
     var configMetadataURL = payload.repository.contents_url.replace('{+path}', '.doiuse');
     var commitsURL, commentURL;
 
+    // TODO: Only acknowledge pushes to the "Master" branch.
     console.log('Repo: ' + payload.repository.full_name);
+    console.log('Payload:');
+    console.log(payload);
 
     request({
         url: configMetadataURL,
