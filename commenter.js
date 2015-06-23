@@ -10,7 +10,7 @@ var parseSource = require('./sourceParse');
 var token = 'token ' + process.env.OAUTH_TOKEN;
 var productName = 'Discord';
 
-var hook = function(httpRequest, response) {
+var comment = function(httpRequest, response) {
     var localToken = token;
     response.status(200).send('ok');
     github(httpRequest, localToken);
@@ -128,4 +128,4 @@ var parseDiff = function(feature, file) {
     return diff.lineToIndex(file.patch, feature.usage.source.start.line);
 };
 
-exports.hook = hook;
+exports.comment = comment;
