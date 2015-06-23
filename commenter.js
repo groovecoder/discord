@@ -3,16 +3,16 @@
 var doiuse = require('doiuse');
 var path = require('path');
 var postcss = require('postcss');
-var request = require('request');
+var sendRequest = require('request');
 var diff = require('./diffParse');
 var parseSource = require('./sourceParse');
 
 var token = 'token ' + process.env.OAUTH_TOKEN;
 var productName = 'Discord';
 
-var comment = function(httpRequest, response) {
-    var eventType = httpRequest.headers['x-github-event'];
-    var payload = httpRequest.body;
+var comment = function(request, response) {
+    var eventType = request.headers['x-github-event'];
+    var payload = request.body;
     var configMetadataURL = payload.repository.contents_url.replace('{+path}', '.doiuse');
     var commitsURL, commentURL;
 
@@ -23,7 +23,7 @@ var comment = function(httpRequest, response) {
 
     response.status(200).send('ok');
 
-    request({
+    sendRequest({
         url: configMetadataURL,
         headers: {
             'User-Agent': productName
@@ -44,7 +44,7 @@ var comment = function(httpRequest, response) {
         if(eventType === 'pull_request') {
             commitsURL = payload.pull_request.commits_url;
             commentURL = payload.pull_request.review_comments_url;
-            request({
+            sendRequest({
                 url: commitsURL,
                 headers: {
                     'User-Agent': productName
@@ -53,7 +53,7 @@ var comment = function(httpRequest, response) {
                 var commits = JSON.parse(body);
 
                 commits.forEach(function(element, index) {
-                    request({
+                    sendRequest({
                         url: element.url,
                         headers: {
                             'User-Agent': productName
@@ -82,7 +82,7 @@ var parseCSS = function(files, config, commentURL, token, cb, sha) {
         }
         if (path.extname(file.filename) === '.css') {
             var rawURL = file.raw_url;
-            request({
+            sendRequest({
                 url: rawURL,
                 headers: {
                     'User-Agent': productName
@@ -102,7 +102,7 @@ var parseCSS = function(files, config, commentURL, token, cb, sha) {
 };
 
 var renderComment = function(url, file, comment, position, token, sha) {
-    request({
+    sendRequest({
         url: url,
         method: 'POST',
         headers: {
