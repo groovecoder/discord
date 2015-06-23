@@ -11,6 +11,12 @@ var token = 'token ' + process.env.OAUTH_TOKEN;
 var productName = 'Discord';
 
 var comment = function(httpRequest, response) {
+    var localToken = token;
+    response.status(200).send('ok');
+    github(httpRequest, localToken);
+};
+
+var github = function(httpRequest, localToken) {
     var eventType = httpRequest.headers['x-github-event'];
     var payload = httpRequest.body;
     var configMetadataURL = payload.repository.contents_url.replace('{+path}', '.doiuse');
@@ -20,8 +26,6 @@ var comment = function(httpRequest, response) {
     console.log('Repo: ' + payload.repository.full_name);
     console.log('Payload:');
     console.log(payload);
-
-    response.status(200);
 
     request({
         url: configMetadataURL,
@@ -62,7 +66,7 @@ var comment = function(httpRequest, response) {
                         var commitMeta = JSON.parse(body);
                         var commitFiles = commitMeta.files;
                         var commitSHA = commitMeta.sha;
-                        parseCSS(commitFiles, config, commentURL, token, function(usageInfo) {}, commitSHA);
+                        parseCSS(commitFiles, config, commentURL, localToken, function(usageInfo) {}, commitSHA);
                     });
                 });
             });
