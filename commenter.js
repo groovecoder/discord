@@ -64,7 +64,7 @@ var comment = function(request, response) {
                     var commitFiles = commitMeta.files;
                     var commitSHA = commitMeta.sha;
                     parseCSS(commitFiles, config, commentURL, token, function(usageInfo) {}, commitSHA);
-                    console.log('Checked commit ' + commitSHA);
+                    console.log('Checked commit: ' + commitSHA);
                 });
             });
         });
@@ -80,7 +80,7 @@ var parseCSS = function(files, config, commentURL, token, cb, sha) {
         };
         if (path.extname(file.filename) === '.styl') {
             parseSource.stylus(file, config, addFeature);
-            console.log('Parsed ' + file.filename);
+            console.log('Parsed: ' + file.filename);
         }
         if (path.extname(file.filename) === '.css') {
             var rawURL = file.raw_url;
@@ -98,7 +98,7 @@ var parseCSS = function(files, config, commentURL, token, cb, sha) {
                     from: '/' + file.filename
                 }).then(function(response) {});
             });
-            console.log('Parsed ' + file.filename);
+            console.log('Parsed: ' + file.filename);
         }
     });
 };
