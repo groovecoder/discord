@@ -18,7 +18,7 @@ var comment = function(request, response) {
     response.status(200).send('ok');
 
     // We only support pull requests at this time
-    if(request.headers['x-github-event'] !== 'pull_request') return;
+    if (request.headers['x-github-event'] !== 'pull_request') return;
 
     // TODO: Only acknowledge pushes to the "Master" branch.
     console.log('Repo: ' + payload.repository.full_name);
@@ -64,6 +64,7 @@ var comment = function(request, response) {
                     var commitFiles = commitMeta.files;
                     var commitSHA = commitMeta.sha;
                     parseCSS(commitFiles, config, commentURL, token, function(usageInfo) {}, commitSHA);
+                    console.log('Checked commit ' + commitSHA);
                 });
             });
         });
@@ -79,6 +80,7 @@ var parseCSS = function(files, config, commentURL, token, cb, sha) {
         };
         if (path.extname(file.filename) === '.styl') {
             parseSource.stylus(file, config, addFeature);
+            console.log('Parsed ' + file.filename);
         }
         if (path.extname(file.filename) === '.css') {
             var rawURL = file.raw_url;
@@ -94,9 +96,9 @@ var parseCSS = function(files, config, commentURL, token, cb, sha) {
                     onFeatureUsage: addFeature
                 })).process(contents, {
                     from: '/' + file.filename
-                }).then(function(response) {
-                });
+                }).then(function(response) {});
             });
+            console.log('Parsed ' + file.filename);
         }
     });
 };
@@ -116,7 +118,9 @@ var renderComment = function(url, file, comment, position, token, sha) {
             position: position
         })
     }, function(error, response, body) {
-        console.error(error);
+        console.error('Error rendering comment: ' + error);
+        console.error('Response: ' + response);
+        console.error('Body: ' + body);
     });
 };
 
