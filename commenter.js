@@ -11,17 +11,19 @@ var token = 'token ' + process.env.OAUTH_TOKEN;
 var productName = 'Discord';
 
 var comment = function(request, response) {
-    var eventType = request.headers['x-github-event'];
     var payload = request.body;
     var configMetadataURL = payload.repository.contents_url.replace('{+path}', '.doiuse');
-    var commitsURL, commentURL;
+
+
+    response.status(200).send('ok');
+
+    // We only support pull requests at this time
+    if(request.headers['x-github-event'] !== 'pull_request') return;
 
     // TODO: Only acknowledge pushes to the "Master" branch.
     console.log('Repo: ' + payload.repository.full_name);
     console.log('Payload:');
     console.log(payload);
-
-    response.status(200).send('ok');
 
     sendRequest({
         url: configMetadataURL,
@@ -31,6 +33,8 @@ var comment = function(request, response) {
     }, function(error, response, body) {
         var configMetadata = JSON.parse(body);
         var config = ['last 2 versions'];
+        var commitsURL = payload.pull_request.commits_url;
+        var commentURL = payload.pull_request.review_comments_url;
         var configMetadataContent;
 
         if (configMetadata.content) {
@@ -41,32 +45,28 @@ var comment = function(request, response) {
             config = configMetadataContent.replace(/\r?\n|\r/g, ', ').split(/,\s*/);
         }
 
-        if(eventType === 'pull_request') {
-            commitsURL = payload.pull_request.commits_url;
-            commentURL = payload.pull_request.review_comments_url;
-            sendRequest({
-                url: commitsURL,
-                headers: {
-                    'User-Agent': productName
-                }
-            }, function(error, response, body) {
-                var commits = JSON.parse(body);
+        sendRequest({
+            url: commitsURL,
+            headers: {
+                'User-Agent': productName
+            }
+        }, function(error, response, body) {
+            var commits = JSON.parse(body);
 
-                commits.forEach(function(element, index) {
-                    sendRequest({
-                        url: element.url,
-                        headers: {
-                            'User-Agent': productName
-                        }
-                    }, function(error, response, body) {
-                        var commitMeta = JSON.parse(body);
-                        var commitFiles = commitMeta.files;
-                        var commitSHA = commitMeta.sha;
-                        parseCSS(commitFiles, config, commentURL, token, function(usageInfo) {}, commitSHA);
-                    });
+            commits.forEach(function(element, index) {
+                sendRequest({
+                    url: element.url,
+                    headers: {
+                        'User-Agent': productName
+                    }
+                }, function(error, response, body) {
+                    var commitMeta = JSON.parse(body);
+                    var commitFiles = commitMeta.files;
+                    var commitSHA = commitMeta.sha;
+                    parseCSS(commitFiles, config, commentURL, token, function(usageInfo) {}, commitSHA);
                 });
             });
-        }
+        });
     });
 };
 
