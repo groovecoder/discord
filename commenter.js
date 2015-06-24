@@ -18,7 +18,9 @@ var comment = function(request, response) {
     response.status(200).send('ok');
 
     // We only support pull requests at this time
-    if(request.headers['x-github-event'] !== 'pull_request') return;
+    if (request.headers['x-github-event'] !== 'pull_request') {
+        return;
+    }
 
     // TODO: Only acknowledge pushes to the "Master" branch.
     console.log('Repo: ' + payload.repository.full_name);
@@ -94,8 +96,7 @@ var parseCSS = function(files, config, commentURL, token, cb, sha) {
                     onFeatureUsage: addFeature
                 })).process(contents, {
                     from: '/' + file.filename
-                }).then(function(response) {
-                });
+                }).then(function(response) {});
             });
         }
     });
