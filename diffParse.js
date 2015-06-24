@@ -23,6 +23,6 @@ var lineToIndex = function(diff, lineNumber) {
         }
     }
     return -1;
-}
+};
 
 module.exports.lineToIndex = lineToIndex;
