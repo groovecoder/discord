@@ -27,31 +27,31 @@ function handle(request, response) {
 }
 
 function comment(metadata) {
-    var pullRequestNumber = metadata.number;
+    var prNumber = metadata.number;
     var destinationRepo = metadata.repository.full_name;
     var originRepo = metadata.pull_request.head.repo.full_name;
     var originBranch = metadata.pull_request.head.ref;
 
     trackUsage(originRepo);
 
-    getConfiguration(originRepo, originBranch, function(config) {
-        var prClient = githubClient.pr(destinationRepo, pullRequestNumber);
+    getConfig(originRepo, originBranch, function(config) {
 
-        prClient.commits(function(error, commits) {
+        getPRCommits(destinationRepo, prNumber, function(error, commits) {
+
             if (error) return logger.logError(error);
-
             commits.forEach(function(currentCommit) {
-                var originRepoClient = githubClient.repo(originRepo);
-                originRepoClient.commit(currentCommit.sha, function(error, currentCommitDetail) {
+                getCommitDetail(originRepo, currentCommit.sha, function(error, currentCommitDetail) {
                     if (error) return logger.logError(error);
                     parseCSS(currentCommitDetail.files, config, metadata.pull_request.review_comments_url, token, function(usageInfo) {}, currentCommit.sha);
                 });
             });
+
         });
+
     });
 }
 
-function getConfiguration(repo, branch, callback) {
+function getConfig(repo, branch, callback) {
     var repoClient = githubClient.repo(repo);
     var configFilename = '.doiuse';
 
@@ -71,6 +71,16 @@ function getConfiguration(repo, branch, callback) {
 
         callback(config);
     });
+}
+
+function getPRCommits(repo, number, callback) {
+    var prClient = githubClient.pr(repo, number);
+    prClient.commits(callback);
+}
+
+function getCommitDetail(repo, sha, callback) {
+    var repoClient = githubClient.repo(repo);
+    repoClient.commit(sha, callback);
 }
 
 function trackUsage(repo) {
