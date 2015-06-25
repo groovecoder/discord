@@ -3,7 +3,8 @@
     "main": "app.js",
     "private": true,
     "scripts": {
-        "test": "./gulp test"
+        "postinstall": "./gulp --gulpfile gulpfiles/prod.js build",
+        "test": "./gulp --gulpfile gulpfiles/dev.js test"
     },
     "license": "MPL-2.0",
     "contributors": [{
@@ -23,15 +24,16 @@
         "body-parser": "^1.6.6",
         "doiuse": "^1.0.2",
         "express": "^4.8.6",
-        "marked": "0.3.3",
+        "gulp": "3.8.11",
+        "gulp-file-include": "0.11.0",
+        "gulp-marked": "1.0.0",
         "postcss": "^4.1.11",
         "request": "^2.40.0",
         "source-map": "^0.4.2",
         "stylus": "^0.51.1"
     },
     "devDependencies": {
-        "gulp": "3.8.11",
-        "gulp-jshint": "1.10.0",
-        "gulp-jsbeautifier": "0.0.8"
+        "gulp-jsbeautifier": "0.0.8",
+        "gulp-jshint": "1.10.0"
     }
 }
