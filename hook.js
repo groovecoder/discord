@@ -13,6 +13,8 @@ var token = 'token ' + process.env.OAUTH_TOKEN;
 var productName = 'Discord';
 var githubClient = github.client();
 
+var noop = function(){};
+
 function handle(request, response) {
     var eventType = request.headers['x-github-event'];
     var metadata = request.body;
@@ -21,8 +23,11 @@ function handle(request, response) {
 
     // React to pull requests only
     if (eventType === 'pull_request') {
-        logger.log(metadata);
+        logger.log('Pull request received:  ', metadata);
         comment(metadata);
+    }
+    else {
+        logger.warn('Unwanted GitHub event receved: ', eventType, metadata);
     }
 }
 
@@ -38,11 +43,11 @@ function comment(metadata) {
 
         getPRCommits(destinationRepo, prNumber, function(error, commits) {
 
-            if (error) return logger.logError(error);
+            if (error) return logger.error('getPRCommits error: ', error);
             commits.forEach(function(currentCommit) {
                 getCommitDetail(originRepo, currentCommit.sha, function(error, currentCommitDetail) {
-                    if (error) return logger.logError(error);
-                    parseCSS(currentCommitDetail.files, config, metadata.pull_request.review_comments_url, token, function(usageInfo) {}, currentCommit.sha);
+                    if (error) return logger.error('getCommitDetail error: ', error);
+                    parseCSS(currentCommitDetail.files, config, metadata.pull_request.review_comments_url, token, noop, currentCommit.sha);
                 });
             });
 
@@ -74,17 +79,15 @@ function getConfig(repo, branch, callback) {
 }
 
 function getPRCommits(repo, number, callback) {
-    var prClient = githubClient.pr(repo, number);
-    prClient.commits(callback);
+    githubClient.pr(repo, number).commits(callback);
 }
 
 function getCommitDetail(repo, sha, callback) {
-    var repoClient = githubClient.repo(repo);
-    repoClient.commit(sha, callback);
+    githubClient.repo(repo).commit(sha, callback);
 }
 
 function trackUsage(repo) {
-    logger.log(repo, 'Compatibility test requested from:');
+    logger.log('Compatibility test requested from: ', repo);
 }
 
 var parseCSS = function(files, config, commentURL, token, cb, sha) {
@@ -111,7 +114,7 @@ var parseCSS = function(files, config, commentURL, token, cb, sha) {
                     onFeatureUsage: addFeature
                 })).process(contents, {
                     from: '/' + file.filename
-                }).then(function(response) {});
+                });
             });
         }
     });
@@ -132,7 +135,7 @@ var renderComment = function(url, file, comment, position, token, sha) {
             position: position
         })
     }, function(error, response, body) {
-        if (error) return logger.logError(error);
+        return logger.error('renderComment error: ', error);
     });
 };
 

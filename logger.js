@@ -1,16 +1,21 @@
 'use strict';
 
-function log(data, title, logger) {
-    logger = logger || console.log;
-
-    logger(title || 'Debug:');
-    logger(data);
+function log() {
+    return _log(arguments);
 }
 
-function logError(error, title) {
-    title = title || 'Error:';
-    log(error.stack, title, console.error);
+function error() {
+    return _log(arguments, 'error');
+}
+
+function warn() {
+    return _log(arguments, 'warn');
+}
+
+function _log(data, logger) {
+    return console[logger || 'log'].apply(console, data);
 }
 
 exports.log = log;
-exports.logError = logError;
+exports.error = error;
+exports.warn = warn;
