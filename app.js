@@ -1,6 +1,5 @@
 'use strict';
 
-var homepage = require('./homepage');
 var commenter = require('./commenter');
 
 // Set up Express
@@ -9,7 +8,7 @@ var bodyParser = require('body-parser');
 var app = express();
 app.use(bodyParser());
 
-app.get('/', homepage);
+app.use(express.static('build/www'));
 app.post('/hook', commenter.comment);
 
 app.listen(process.env.PORT);
