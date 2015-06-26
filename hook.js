@@ -24,6 +24,9 @@ function handle(request, response) {
         logger.log(metadata);
         comment(metadata);
     }
+    else {
+        logger.logError('Invalid event received: ' + eventType);
+    }
 }
 
 function comment(metadata) {
