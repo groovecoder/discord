@@ -27,6 +27,7 @@
         "gulp": "3.8.11",
         "gulp-file-include": "0.11.0",
         "gulp-marked": "1.0.0",
+        "octonode": "0.6.18",
         "postcss": "^4.1.11",
         "request": "^2.40.0",
         "source-map": "^0.4.2",
