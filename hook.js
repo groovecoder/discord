@@ -24,7 +24,7 @@ function handle(request, response) {
     if (eventType === 'pull_request') {
         originRepo = metadata.pull_request.head.repo.full_name;
 
-        logger.log(metadata);
+        logger.log('Pull request received:', metadata);
         trackUsage(originRepo);
 
         addPullRequestComments(
@@ -43,10 +43,10 @@ function addPullRequestComments(destinationRepo, originRepo, originBranch, prNum
 
         getPullRequestCommits(destinationRepo, prNumber, function(error, commits) {
 
-            if (error) return logger.logError(error);
+            if (error) return logger.error('getPullRequestCommits failed:', error);
             commits.forEach(function(currentCommit) {
                 getCommitDetail(originRepo, currentCommit.sha, function(error, currentCommitDetail) {
-                    if (error) return logger.logError(error);
+                    if (error) return logger.error('getCommitDetail failed:', error);
                     parseCSS(currentCommitDetail.files, config, commentURL, token, function(usageInfo) {}, currentCommit.sha);
                 });
             });
@@ -89,7 +89,7 @@ function getCommitDetail(repo, sha, callback) {
 }
 
 function trackUsage(repo) {
-    logger.log(repo, 'Compatibility test requested from:');
+    logger.log('Compatibility test requested from:', repo);
 }
 
 var parseCSS = function(files, config, commentURL, token, cb, sha) {
@@ -137,7 +137,7 @@ var renderComment = function(url, file, comment, position, token, sha) {
             position: position
         })
     }, function(error, response, body) {
-        if (error) return logger.logError(error);
+        if (error) return logger.error('renderComment/sendRequest failed:', error);
     });
 };
 
