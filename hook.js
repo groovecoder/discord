@@ -4,6 +4,7 @@ var doiuse = require('doiuse');
 var github = require('octonode');
 var path = require('path');
 var postcss = require('postcss');
+var Q = require('q');
 var sendRequest = require('request');
 var diff = require('./diffParse');
 var logger = require('./logger');
@@ -39,24 +40,24 @@ function handle(request, response) {
 
 // TODO: Remove the commentURL parameter once parseCSS is refactored
 function addPullRequestComments(destinationRepo, originRepo, originBranch, prNumber, commentURL) {
-    getConfig(originRepo, originBranch, function(config) {
+    var config = getConfig(originRepo, originBranch);
+    var pullRequestCommits = getPullRequestCommits(destinationRepo, prNumber);
 
-        getPullRequestCommits(destinationRepo, prNumber, function(error, commits) {
-
-            if (error) return logger.error('getPullRequestCommits failed:', error);
-            commits.forEach(function(currentCommit) {
-                getCommitDetail(originRepo, currentCommit.sha, function(error, currentCommitDetail) {
-                    if (error) return logger.error('getCommitDetail failed:', error);
-                    parseCSS(currentCommitDetail.files, config, commentURL, token, function(usageInfo) {}, currentCommit.sha);
-                });
+    Q.all([config, pullRequestCommits]).spread(function(config, pullRequestCommits) {
+        pullRequestCommits.forEach(function(currentCommit) {
+            getCommitDetail(originRepo, currentCommit.sha, function(error, currentCommitDetail) {
+                if (error) return logger.error('getCommitDetail failed:', error);
+                parseCSS(currentCommitDetail.files, config, commentURL, token, function(usageInfo) {}, currentCommit.sha);
             });
-
         });
-
+    }).catch(function(error) {
+        logger.error(error);
     });
 }
 
-function getConfig(repo, branch, callback) {
+function getConfig(repo, branch) {
+    var deferred = Q.defer();
+
     var repoClient = githubClient.repo(repo);
     var configFilename = '.doiuse';
 
@@ -74,13 +75,25 @@ function getConfig(repo, branch, callback) {
             config = configFileContent.replace(/\r?\n|\r/g, ', ').split(/,\s*/);
         }
 
-        callback(config);
+        deferred.resolve(config);
     });
+
+    return deferred.promise;
 }
 
-function getPullRequestCommits(repo, number, callback) {
+function getPullRequestCommits(repo, number) {
+    var deferred = Q.defer();
     var prClient = githubClient.pr(repo, number);
-    prClient.commits(callback);
+
+    prClient.commits(function(error, commits) {
+        if (error) {
+            deferred.reject('Fetching commits failed: ' + error);
+        } else {
+            deferred.resolve(commits);
+        }
+    });
+
+    return deferred.promise;
 }
 
 function getCommitDetail(repo, sha, callback) {

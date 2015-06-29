@@ -29,6 +29,7 @@
         "gulp-marked": "1.0.0",
         "octonode": "0.6.18",
         "postcss": "^4.1.11",
+        "q": "1.4.1",
         "request": "^2.40.0",
         "source-map": "^0.4.2",
         "stylus": "^0.51.1"
