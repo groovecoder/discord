@@ -16,33 +16,38 @@ var githubClient = github.client();
 function handle(request, response) {
     var eventType = request.headers['x-github-event'];
     var metadata = request.body;
+    var originRepo;
 
     response.status(200).send('OK');
 
     // React to pull requests only
     if (eventType === 'pull_request') {
+        originRepo = metadata.pull_request.head.repo.full_name;
+
         logger.log(metadata);
-        comment(metadata);
+        trackUsage(originRepo);
+
+        addPullRequestComments(
+            metadata.repository.full_name,
+            originRepo,
+            metadata.pull_request.head.ref,
+            metadata.number,
+            metadata.pull_request.review_comments_url
+        );
     }
 }
 
-function comment(metadata) {
-    var prNumber = metadata.number;
-    var destinationRepo = metadata.repository.full_name;
-    var originRepo = metadata.pull_request.head.repo.full_name;
-    var originBranch = metadata.pull_request.head.ref;
-
-    trackUsage(originRepo);
-
+// TODO: Remove the commentURL parameter once parseCSS is refactored
+function addPullRequestComments(destinationRepo, originRepo, originBranch, prNumber, commentURL) {
     getConfig(originRepo, originBranch, function(config) {
 
-        getPRCommits(destinationRepo, prNumber, function(error, commits) {
+        getPullRequestCommits(destinationRepo, prNumber, function(error, commits) {
 
             if (error) return logger.logError(error);
             commits.forEach(function(currentCommit) {
                 getCommitDetail(originRepo, currentCommit.sha, function(error, currentCommitDetail) {
                     if (error) return logger.logError(error);
-                    parseCSS(currentCommitDetail.files, config, metadata.pull_request.review_comments_url, token, function(usageInfo) {}, currentCommit.sha);
+                    parseCSS(currentCommitDetail.files, config, commentURL, token, function(usageInfo) {}, currentCommit.sha);
                 });
             });
 
@@ -73,7 +78,7 @@ function getConfig(repo, branch, callback) {
     });
 }
 
-function getPRCommits(repo, number, callback) {
+function getPullRequestCommits(repo, number, callback) {
     var prClient = githubClient.pr(repo, number);
     prClient.commits(callback);
 }
