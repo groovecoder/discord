@@ -112,13 +112,13 @@ var parseCSS = function(files, config, commentURL, token, cb, sha) {
             var comment = feature.featureData.title + ' not supported by: ' + feature.featureData.missing;
             renderComment(commentURL, file.filename, comment, diffIndex, token, sha);
         };
-        if (path.extname(file.filename) === '.styl') {
+        var fileExtension = path.extname(file.filename).toLowerCase();
+
+        if (fileExtension === '.styl') {
             parseSource.stylus(file, config, addFeature);
-        }
-        if (path.extname(file.filename) === '.css') {
-            var rawURL = file.raw_url;
+        } else if (fileExtension === '.css') {
             sendRequest({
-                url: rawURL,
+                url: file.raw_url,
                 headers: {
                     'User-Agent': productName
                 }
