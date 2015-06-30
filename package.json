@@ -3,8 +3,8 @@
     "main": "app.js",
     "private": true,
     "scripts": {
-        "postinstall": "./gulp --gulpfile gulpfiles/prod.js build",
-        "test": "./gulp --gulpfile gulpfiles/dev.js test"
+        "postinstall": "./gulp --gulpfile gulpfile-prod.js build",
+        "test": "./gulp test"
     },
     "license": "MPL-2.0",
     "contributors": [{
