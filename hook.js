@@ -12,6 +12,7 @@ var parseSource = require('./sourceParse');
 
 var token = 'token ' + process.env.OAUTH_TOKEN;
 var productName = 'Discord';
+var configFilename = '.doiuse';
 var githubClient = github.client();
 
 function handle(request, response) {
@@ -59,20 +60,16 @@ function getConfig(repo, branch) {
     var deferred = Q.defer();
 
     var repoClient = githubClient.repo(repo);
-    var configFilename = '.doiuse';
 
     repoClient.contents(configFilename, branch, function(error, configFileMetadata) {
-        var defaultConfig = ['last 2 versions'];
-        var configFileContent, config;
+        var config = ['last 2 versions'];
 
-        if (error) {
-            // The configuration file does not exist
-            config = defaultConfig;
-        } else {
-            configFileContent = new Buffer(configFileMetadata.content, 'base64').toString();
-
+        // If the file is found, massage the file contents and use that configuration
+        if (!error) {
             // Consider text separated by commas and linebreaks to be individual options
-            config = configFileContent.replace(/\r?\n|\r/g, ', ').split(/,\s*/);
+            config = new Buffer(configFileMetadata.content, 'base64').toString()
+                .replace(/\r?\n|\r/g, ', ')
+                .split(/,\s*/);
         }
 
         deferred.resolve(config);
