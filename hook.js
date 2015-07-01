@@ -83,7 +83,7 @@ function getPullRequestCommits(repo, number) {
         var promises = [];
 
         if (error) {
-            deferred.reject('Fetching commits failed: ' + error);
+            deferred.reject('Error fetching commits from pull request ' + number + ' of ' + repo + ':', error);
         } else {
 
             // Build an array of commit detail promises
@@ -109,7 +109,7 @@ function getCommitDetail(repo, sha) {
 
     repoClient.commit(sha, function(error, commitDetail) {
         if (error) {
-            deferred.reject('Fetching commit detail failed: ' + error);
+            deferred.reject('Error fetching detail of commit ' + sha + ' from ' + repo + ':', error);
         } else {
             deferred.resolve(commitDetail);
         }
