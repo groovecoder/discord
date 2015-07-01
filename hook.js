@@ -105,7 +105,7 @@ function trackUsage(repo) {
 var parseCSS = function(files, config, commentURL, token, cb, sha) {
     files.forEach(function(file, index) {
         var addFeature = function(feature) {
-            var diffIndex = parseDiff(feature, file);
+            var diffIndex = diff.lineToIndex(file.patch, feature.usage.source.start.line);
             var comment = feature.featureData.title + ' not supported by: ' + feature.featureData.missing;
             renderComment(commentURL, file.filename, comment, diffIndex, token, sha);
         };
@@ -149,10 +149,6 @@ var renderComment = function(url, file, comment, position, token, sha) {
     }, function(error, response, body) {
         if (error) return logger.error('renderComment/sendRequest failed:', error);
     });
-};
-
-var parseDiff = function(feature, file) {
-    return diff.lineToIndex(file.patch, feature.usage.source.start.line);
 };
 
 exports.handle = handle;
