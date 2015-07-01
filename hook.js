@@ -64,8 +64,8 @@ function getConfig(repo, branch) {
     repoClient.contents(configFilename, branch, function(error, configFileMetadata) {
         var config = ['last 2 versions'];
 
-        // If the file is found, massage the file contents and use that configuration
-        if (!error) {
+        // Only replace the default config if the .doiuse file exists and has content
+        if (!error && configFileMetadata.content) {
             // Consider text separated by commas and linebreaks to be individual options
             config = new Buffer(configFileMetadata.content, 'base64').toString()
                 .replace(/\r?\n|\r/g, ', ')
