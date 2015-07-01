@@ -46,10 +46,7 @@ function addPullRequestComments(destinationRepo, originRepo, originBranch, prNum
 
     Q.all([config, pullRequestCommits]).spread(function(config, pullRequestCommits) {
         pullRequestCommits.forEach(function(currentCommit) {
-            getCommitDetail(originRepo, currentCommit.sha, function(error, currentCommitDetail) {
-                if (error) return logger.error('getCommitDetail failed:', error);
-                parseCSS(currentCommitDetail.files, config, commentURL, token, function(usageInfo) {}, currentCommit.sha);
-            });
+            parseCSS(currentCommit.files, config, commentURL, token, function(usageInfo) {}, currentCommit.sha);
         });
     }).catch(function(error) {
         logger.error(error);
@@ -79,22 +76,46 @@ function getConfig(repo, branch) {
 
 function getPullRequestCommits(repo, number) {
     var deferred = Q.defer();
+
     var prClient = githubClient.pr(repo, number);
 
     prClient.commits(function(error, commits) {
+        var promises = [];
+
         if (error) {
             deferred.reject('Fetching commits failed: ' + error);
         } else {
-            deferred.resolve(commits);
+
+            // Build an array of commit detail promises
+            commits.forEach(function(currentCommit) {
+                promises.push(getCommitDetail(repo, currentCommit.sha));
+            });
+
+            // When all of the commit detail promises have been resolved,
+            // resolve an array of commit detail
+            Q.all(promises).spread(function() {
+                deferred.resolve(Array.prototype.slice.call(arguments));
+            });
+
         }
     });
 
     return deferred.promise;
 }
 
-function getCommitDetail(repo, sha, callback) {
+function getCommitDetail(repo, sha) {
+    var deferred = Q.defer();
     var repoClient = githubClient.repo(repo);
-    repoClient.commit(sha, callback);
+
+    repoClient.commit(sha, function(error, commitDetail) {
+        if (error) {
+            deferred.reject('Fetching commit detail failed: ' + error);
+        } else {
+            deferred.resolve(commitDetail);
+        }
+    });
+
+    return deferred.promise;
 }
 
 function trackUsage(repo) {
