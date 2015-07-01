@@ -41,11 +41,11 @@ function handle(request, response) {
 
 // TODO: Remove the commentURL parameter once parseCSS is refactored
 function addPullRequestComments(destinationRepo, originRepo, originBranch, prNumber, commentURL) {
+    var commits = getPullRequestCommits(destinationRepo, prNumber);
     var config = getConfig(originRepo, originBranch);
-    var pullRequestCommits = getPullRequestCommits(destinationRepo, prNumber);
 
-    Q.all([config, pullRequestCommits]).spread(function(config, pullRequestCommits) {
-        pullRequestCommits.forEach(function(currentCommit) {
+    Q.all([commits, config]).spread(function(commits, config) {
+        commits.forEach(function(currentCommit) {
             parseCSS(currentCommit.files, config, commentURL, token, function(usageInfo) {}, currentCommit.sha);
         });
     }).catch(function(error) {
