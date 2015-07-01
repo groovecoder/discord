@@ -1,17 +1,13 @@
 'use strict';
 
-var doiuse = require('doiuse');
 var github = require('octonode');
 var path = require('path');
-var postcss = require('postcss');
 var Q = require('q');
-var sendRequest = require('request');
+var commenter = require('./commenter');
 var diff = require('./diffParse');
 var logger = require('./logger');
-var parseSource = require('./sourceParse');
+var processor = require('./processor');
 
-var token = 'token ' + process.env.OAUTH_TOKEN;
-var productName = 'Discord';
 var configFilename = '.doiuse';
 var githubClient = github.client();
 
@@ -28,7 +24,7 @@ function handle(request, response) {
 
         logger.log('Compatibility test requested from:', originRepo);
 
-        addPullRequestComments(
+        processPullRequest(
             metadata.repository.full_name,
             originRepo,
             metadata.pull_request.head.ref,
@@ -38,14 +34,37 @@ function handle(request, response) {
     }
 }
 
-// TODO: Remove the commentURL parameter once parseCSS is refactored
-function addPullRequestComments(destinationRepo, originRepo, originBranch, prNumber, commentURL) {
+function processPullRequest(destinationRepo, originRepo, originBranch, prNumber, commentURL) {
     var commits = getPullRequestCommits(destinationRepo, prNumber);
     var config = getConfig(originRepo, originBranch);
 
+    // Once we pull down commit metadata and configuration...
     Q.all([commits, config]).spread(function(commits, config) {
+
+        // Go through each commit...
         commits.forEach(function(currentCommit) {
-            parseCSS(currentCommit.files, config, commentURL, token, function(usageInfo) {}, currentCommit.sha);
+
+            // And each file of each commit... and process the files.
+            currentCommit.files.forEach(function(file) {
+                var process;
+
+                function handleIncompatibility(incompatibility) {
+                    var line = diff.lineToIndex(file.patch, incompatibility.usage.source.start.line);
+                    var comment = incompatibility.featureData.title + ' not supported by: ' + incompatibility.featureData.missing;
+                    commenter.postPullRequestComment(commentURL, comment, file.filename, currentCommit.sha, line);
+                }
+
+                switch (path.extname(file.filename).toLowerCase()) {
+                    case '.css':
+                        process = processor.processCSS;
+                        break;
+                    case '.styl':
+                        process = processor.processStylus;
+                        break;
+                }
+
+                process(originRepo, originBranch, file, config, handleIncompatibility);
+            });
         });
     }).catch(function(error) {
         logger.error(error);
@@ -116,54 +135,5 @@ function getCommitDetail(repo, sha) {
 
     return deferred.promise;
 }
-
-var parseCSS = function(files, config, commentURL, token, cb, sha) {
-    files.forEach(function(file, index) {
-        var addFeature = function(feature) {
-            var diffIndex = diff.lineToIndex(file.patch, feature.usage.source.start.line);
-            var comment = feature.featureData.title + ' not supported by: ' + feature.featureData.missing;
-            renderComment(commentURL, file.filename, comment, diffIndex, token, sha);
-        };
-        var fileExtension = path.extname(file.filename).toLowerCase();
-
-        if (fileExtension === '.styl') {
-            parseSource.stylus(file, config, addFeature);
-        } else if (fileExtension === '.css') {
-            sendRequest({
-                url: file.raw_url,
-                headers: {
-                    'User-Agent': productName
-                }
-            }, function(error, response, body) {
-                var contents = body;
-                postcss(doiuse({
-                    browsers: config,
-                    onFeatureUsage: addFeature
-                })).process(contents, {
-                    from: '/' + file.filename
-                }).then(function(response) {});
-            });
-        }
-    });
-};
-
-var renderComment = function(url, file, comment, position, token, sha) {
-    sendRequest({
-        url: url,
-        method: 'POST',
-        headers: {
-            'User-Agent': productName,
-            'Authorization': token
-        },
-        body: JSON.stringify({
-            body: comment,
-            path: file,
-            commit_id: sha,
-            position: position
-        })
-    }, function(error, response, body) {
-        if (error) return logger.error('renderComment/sendRequest failed:', error);
-    });
-};
 
 exports.handle = handle;
