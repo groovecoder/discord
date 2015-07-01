@@ -27,7 +27,7 @@ function handle(request, response) {
         originRepo = metadata.pull_request.head.repo.full_name;
 
         logger.log('Pull request received:', metadata);
-        trackUsage(originRepo);
+        logger.log('Compatibility test requested from:', originRepo);
 
         addPullRequestComments(
             metadata.repository.full_name,
@@ -116,10 +116,6 @@ function getCommitDetail(repo, sha) {
     });
 
     return deferred.promise;
-}
-
-function trackUsage(repo) {
-    logger.log('Compatibility test requested from:', repo);
 }
 
 var parseCSS = function(files, config, commentURL, token, cb, sha) {
