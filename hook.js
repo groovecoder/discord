@@ -58,11 +58,10 @@ function addPullRequestComments(destinationRepo, originRepo, originBranch, prNum
 
 function getConfig(repo, branch) {
     var deferred = Q.defer();
-
     var repoClient = githubClient.repo(repo);
 
     repoClient.contents(configFilename, branch, function(error, configFileMetadata) {
-        var config = ['last 2 versions'];
+        var config = ['last 2 versions']; // Default configuration
 
         // If the file is found, massage the file contents and use that configuration
         if (!error) {
