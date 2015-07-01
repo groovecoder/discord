@@ -16,6 +16,6 @@ gulp.task('build:homepage', ['build:readme-html'], function() {
 
 gulp.task('build:readme-html', function() {
     return gulp.src('README.md')
-               .pipe(marked())
-               .pipe(gulp.dest(buildDirectory + 'html/includes'));
+        .pipe(marked())
+        .pipe(gulp.dest(buildDirectory + 'html/includes'));
 });
