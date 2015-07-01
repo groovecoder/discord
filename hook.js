@@ -26,7 +26,6 @@ function handle(request, response) {
     if (eventType === 'pull_request') {
         originRepo = metadata.pull_request.head.repo.full_name;
 
-        logger.log('Pull request received:', metadata);
         logger.log('Compatibility test requested from:', originRepo);
 
         addPullRequestComments(
