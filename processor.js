@@ -7,9 +7,13 @@ var sourceMap = require('source-map');
 var stylus = require('stylus');
 var logger = require('./logger');
 
+/**
+ * Test and report on changes to the given CSS stylesheet.
+ */
 function processCSS(repo, branch, file, config, handleIncompatibility) {
     var repoClient = github.client().repo(repo);
 
+    // Fetch the contents of the stylesheet
     repoClient.contents(file.filename, branch, function(error, fileContentsMetadata) {
         var fileContents;
 
@@ -17,6 +21,8 @@ function processCSS(repo, branch, file, config, handleIncompatibility) {
 
         fileContents = new Buffer(fileContentsMetadata.content, 'base64').toString();
 
+        // Test the stylesheet with doiuse and call handleIncompatibility for
+        // any incompatibilities that are found
         postcss(doiuse({
             browsers: config,
             onFeatureUsage: handleIncompatibility
@@ -26,9 +32,13 @@ function processCSS(repo, branch, file, config, handleIncompatibility) {
     });
 }
 
+/**
+ * Test and report on changes to the given Stylus stylesheet.
+ */
 function processStylus(repo, branch, file, config, handleIncompatibility) {
     var repoClient = github.client().repo(repo);
 
+    // Fetch the contents of the stylesheet
     repoClient.contents(file.filename, branch, function(error, fileContentsMetadata) {
         var fileContents, compiler;
 
@@ -42,6 +52,9 @@ function processStylus(repo, branch, file, config, handleIncompatibility) {
         compiler.render(function(error, compiledCSS) {
             if (error) return logger.error('Error compiling Stylus of ' + repo + ' / ' + branch + ' / ' + file.filename + ':', error);
 
+            // React to an incompatible line of Stylus. Compile the stylus with
+            // a source map to get an accurate line number for the
+            // incompatibility.
             function handleStylusIncompatibility(incompatibility) {
                 var sourceMapConsumer = new sourceMap.SourceMapConsumer(compiler.sourcemap);
                 var position = incompatibility.usage.source.start;
@@ -53,6 +66,9 @@ function processStylus(repo, branch, file, config, handleIncompatibility) {
                 handleIncompatibility(incompatibility);
             }
 
+            // Test the stylesheet with doiuse and call
+            // handleStylusIncompatibility for any incompatibilities that are
+            // found
             postcss(doiuse({
                 browsers: config,
                 onFeatureUsage: handleStylusIncompatibility

@@ -11,6 +11,9 @@ var processor = require('./processor');
 var configFilename = '.doiuse';
 var githubClient = github.client();
 
+/**
+ * Handle requests to /hook.
+ */
 function handle(request, response) {
     var eventType = request.headers['x-github-event'];
     var metadata = request.body;
@@ -34,26 +37,32 @@ function handle(request, response) {
     }
 }
 
+/**
+ * React to a new pull request. Go through all changes to stylesheets, test
+ * those changes, and report any incompatibilities.
+ */
 function processPullRequest(destinationRepo, originRepo, originBranch, prNumber, commentURL) {
     var commits = getPullRequestCommits(destinationRepo, prNumber);
     var config = getConfig(originRepo, originBranch);
 
-    // Once we pull down commit metadata and configuration...
+    // Once we have pulled down commit metadata and doiuse configuration...
     Q.all([commits, config]).spread(function(commits, config) {
 
         // Go through each commit...
         commits.forEach(function(currentCommit) {
 
-            // And each file of each commit... and process the files.
+            // And each file of each commit... and report on the changes.
             currentCommit.files.forEach(function(file) {
                 var process;
 
+                // Callback for handling an incompatible line of code
                 function handleIncompatibility(incompatibility) {
                     var line = diff.lineToIndex(file.patch, incompatibility.usage.source.start.line);
                     var comment = incompatibility.featureData.title + ' not supported by: ' + incompatibility.featureData.missing;
                     commenter.postPullRequestComment(commentURL, comment, file.filename, currentCommit.sha, line);
                 }
 
+                // Test and report on this file if it's a stylesheet
                 switch (path.extname(file.filename).toLowerCase()) {
                     case '.css':
                         process = processor.processCSS;
@@ -61,6 +70,8 @@ function processPullRequest(destinationRepo, originRepo, originBranch, prNumber,
                     case '.styl':
                         process = processor.processStylus;
                         break;
+                    default:
+                        return;
                 }
 
                 process(originRepo, originBranch, file, config, handleIncompatibility);
@@ -71,11 +82,13 @@ function processPullRequest(destinationRepo, originRepo, originBranch, prNumber,
     });
 }
 
+/**
+ * Get the doiuse configuration of a repository at a particular branch.
+ */
 function getConfig(repo, branch) {
     var deferred = Q.defer();
-    var repoClient = githubClient.repo(repo);
 
-    repoClient.contents(configFilename, branch, function(error, configFileMetadata) {
+    githubClient.repo(repo).contents(configFilename, branch, function(error, configFileMetadata) {
         var config = ['last 2 versions']; // Default configuration
 
         // If the file is found, massage the file contents and use that configuration
@@ -92,12 +105,14 @@ function getConfig(repo, branch) {
     return deferred.promise;
 }
 
+/**
+ * Get an array of detailed metadata about the commits of a given pull request.
+ * Metadata format: https://developer.github.com/v3/repos/commits/#get-a-single-commit
+ */
 function getPullRequestCommits(repo, number) {
     var deferred = Q.defer();
 
-    var prClient = githubClient.pr(repo, number);
-
-    prClient.commits(function(error, commits) {
+    githubClient.pr(repo, number).commits(function(error, commits) {
         var promises = [];
 
         if (error) {
@@ -121,6 +136,10 @@ function getPullRequestCommits(repo, number) {
     return deferred.promise;
 }
 
+/**
+ * Get detailed metadata about a single commit.
+ * Metadata format: https://developer.github.com/v3/repos/commits/#get-a-single-commit
+ */
 function getCommitDetail(repo, sha) {
     var deferred = Q.defer();
     var repoClient = githubClient.repo(repo);
