@@ -5,7 +5,9 @@ var github = require('octonode');
 var postcss = require('postcss');
 var sourceMap = require('source-map');
 var stylus = require('stylus');
+
 var logger = require('./logger');
+var utils = require('./utils');
 
 /**
  * Test and report on changes to the given CSS stylesheet.
@@ -19,7 +21,7 @@ function processCSS(repo, branch, file, config, handleIncompatibility) {
 
         if (error) return logger.error('Error reading contents from ' + repo + ' / ' + branch + ' / ' + file.filename + ':', error);
 
-        fileContents = new Buffer(fileContentsMetadata.content, 'base64').toString();
+        fileContents = utils.prepareContent(fileContentsMetadata.content);
 
         // Test the stylesheet with doiuse and call handleIncompatibility for
         // any incompatibilities that are found
@@ -44,7 +46,7 @@ function processStylus(repo, branch, file, config, handleIncompatibility) {
 
         if (error) return logger.error('Error reading contents from ' + repo + ' / ' + branch + ' / ' + file.filename + ':', error);
 
-        fileContents = new Buffer(fileContentsMetadata.content, 'base64').toString();
+        fileContents = utils.prepareContent(fileContentsMetadata.content);
         compiler = stylus(fileContents)
             .set('filename', file.filename)
             .set('sourcemap', {});
