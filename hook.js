@@ -1,20 +1,19 @@
 'use strict';
 
-var doiuse = require('doiuse');
 var github = require('octonode');
 var path = require('path');
-var postcss = require('postcss');
 var Q = require('q');
-var sendRequest = require('request');
+var commenter = require('./commenter');
 var diff = require('./diffParse');
 var logger = require('./logger');
-var parseSource = require('./sourceParse');
+var processor = require('./processor');
 
-var token = 'token ' + process.env.OAUTH_TOKEN;
-var productName = 'Discord';
 var configFilename = '.doiuse';
 var githubClient = github.client();
 
+/**
+ * Handle requests to /hook.
+ */
 function handle(request, response) {
     var eventType = request.headers['x-github-event'];
     var metadata = request.body;
@@ -26,10 +25,9 @@ function handle(request, response) {
     if (eventType === 'pull_request') {
         originRepo = metadata.pull_request.head.repo.full_name;
 
-        logger.log('Pull request received:', metadata);
-        trackUsage(originRepo);
+        logger.log('Compatibility test requested from:', originRepo);
 
-        addPullRequestComments(
+        processPullRequest(
             metadata.repository.full_name,
             originRepo,
             metadata.pull_request.head.ref,
@@ -39,16 +37,44 @@ function handle(request, response) {
     }
 }
 
-// TODO: Remove the commentURL parameter once parseCSS is refactored
-function addPullRequestComments(destinationRepo, originRepo, originBranch, prNumber, commentURL) {
+/**
+ * React to a new pull request. Go through all changes to stylesheets, test
+ * those changes, and report any incompatibilities.
+ */
+function processPullRequest(destinationRepo, originRepo, originBranch, prNumber, commentURL) {
+    var commits = getPullRequestCommits(destinationRepo, prNumber);
     var config = getConfig(originRepo, originBranch);
-    var pullRequestCommits = getPullRequestCommits(destinationRepo, prNumber);
 
-    Q.all([config, pullRequestCommits]).spread(function(config, pullRequestCommits) {
-        pullRequestCommits.forEach(function(currentCommit) {
-            getCommitDetail(originRepo, currentCommit.sha, function(error, currentCommitDetail) {
-                if (error) return logger.error('getCommitDetail failed:', error);
-                parseCSS(currentCommitDetail.files, config, commentURL, token, function(usageInfo) {}, currentCommit.sha);
+    // Once we have pulled down commit metadata and doiuse configuration...
+    Q.all([commits, config]).spread(function(commits, config) {
+
+        // Go through each commit...
+        commits.forEach(function(currentCommit) {
+
+            // And each file of each commit... and report on the changes.
+            currentCommit.files.forEach(function(file) {
+                var process;
+
+                // Callback for handling an incompatible line of code
+                function handleIncompatibility(incompatibility) {
+                    var line = diff.lineToIndex(file.patch, incompatibility.usage.source.start.line);
+                    var comment = incompatibility.featureData.title + ' not supported by: ' + incompatibility.featureData.missing;
+                    commenter.postPullRequestComment(commentURL, comment, file.filename, currentCommit.sha, line);
+                }
+
+                // Test and report on this file if it's a stylesheet
+                switch (path.extname(file.filename).toLowerCase()) {
+                    case '.css':
+                        process = processor.processCSS;
+                        break;
+                    case '.styl':
+                        process = processor.processStylus;
+                        break;
+                    default:
+                        return;
+                }
+
+                process(originRepo, originBranch, file, config, handleIncompatibility);
             });
         });
     }).catch(function(error) {
@@ -56,13 +82,14 @@ function addPullRequestComments(destinationRepo, originRepo, originBranch, prNum
     });
 }
 
+/**
+ * Get the doiuse configuration of a repository at a particular branch.
+ */
 function getConfig(repo, branch) {
     var deferred = Q.defer();
 
-    var repoClient = githubClient.repo(repo);
-
-    repoClient.contents(configFilename, branch, function(error, configFileMetadata) {
-        var config = ['last 2 versions'];
+    githubClient.repo(repo).contents(configFilename, branch, function(error, configFileMetadata) {
+        var config = ['last 2 versions']; // Default configuration
 
         // Only replace the default config if the .doiuse file exists and has content
         if (!error && configFileMetadata.content) {
@@ -78,81 +105,54 @@ function getConfig(repo, branch) {
     return deferred.promise;
 }
 
+/**
+ * Get an array of detailed metadata about the commits of a given pull request.
+ * Metadata format: https://developer.github.com/v3/repos/commits/#get-a-single-commit
+ */
 function getPullRequestCommits(repo, number) {
     var deferred = Q.defer();
-    var prClient = githubClient.pr(repo, number);
 
-    prClient.commits(function(error, commits) {
+    githubClient.pr(repo, number).commits(function(error, commits) {
+        var promises = [];
+
         if (error) {
-            deferred.reject('Fetching commits failed: ' + error);
+            deferred.reject('Error fetching commits from pull request ' + number + ' of ' + repo + ':', error);
         } else {
-            deferred.resolve(commits);
+
+            // Build an array of commit detail promises
+            commits.forEach(function(currentCommit) {
+                promises.push(getCommitDetail(repo, currentCommit.sha));
+            });
+
+            // When all of the commit detail promises have been resolved,
+            // resolve an array of commit detail
+            Q.all(promises).spread(function() {
+                deferred.resolve(Array.prototype.slice.call(arguments));
+            });
+
         }
     });
 
     return deferred.promise;
 }
 
-function getCommitDetail(repo, sha, callback) {
+/**
+ * Get detailed metadata about a single commit.
+ * Metadata format: https://developer.github.com/v3/repos/commits/#get-a-single-commit
+ */
+function getCommitDetail(repo, sha) {
+    var deferred = Q.defer();
     var repoClient = githubClient.repo(repo);
-    repoClient.commit(sha, callback);
-}
 
-function trackUsage(repo) {
-    logger.log('Compatibility test requested from:', repo);
-}
-
-var parseCSS = function(files, config, commentURL, token, cb, sha) {
-    files.forEach(function(file, index) {
-        var addFeature = function(feature) {
-            var diffIndex = parseDiff(feature, file);
-            var comment = feature.featureData.title + ' not supported by: ' + feature.featureData.missing;
-            renderComment(commentURL, file.filename, comment, diffIndex, token, sha);
-        };
-        var fileExtension = path.extname(file.filename).toLowerCase();
-
-        if (fileExtension === '.styl') {
-            parseSource.stylus(file, config, addFeature);
-        } else if (fileExtension === '.css') {
-            sendRequest({
-                url: file.raw_url,
-                headers: {
-                    'User-Agent': productName
-                }
-            }, function(error, response, body) {
-                var contents = body;
-                postcss(doiuse({
-                    browsers: config,
-                    onFeatureUsage: addFeature
-                })).process(contents, {
-                    from: '/' + file.filename
-                }).then(function(response) {});
-            });
+    repoClient.commit(sha, function(error, commitDetail) {
+        if (error) {
+            deferred.reject('Error fetching detail of commit ' + sha + ' from ' + repo + ':', error);
+        } else {
+            deferred.resolve(commitDetail);
         }
     });
-};
 
-var renderComment = function(url, file, comment, position, token, sha) {
-    sendRequest({
-        url: url,
-        method: 'POST',
-        headers: {
-            'User-Agent': productName,
-            'Authorization': token
-        },
-        body: JSON.stringify({
-            body: comment,
-            path: file,
-            commit_id: sha,
-            position: position
-        })
-    }, function(error, response, body) {
-        if (error) return logger.error('renderComment/sendRequest failed:', error);
-    });
-};
-
-var parseDiff = function(feature, file) {
-    return diff.lineToIndex(file.patch, feature.usage.source.start.line);
-};
+    return deferred.promise;
+}
 
 exports.handle = handle;
