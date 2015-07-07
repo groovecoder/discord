@@ -5,8 +5,9 @@
  * create_pull_request_comment.
  */
 
-var logger = require('./logger');
 var sendRequest = require('request');
+
+var logger = require('./logger');
 
 /**
  * Post a line comment on a particular pull request. commentURL should be an
