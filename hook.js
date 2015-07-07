@@ -115,22 +115,19 @@ function getPullRequestCommits(repo, number) {
     githubClient.pr(repo, number).commits(function(error, commits) {
         var promises = [];
 
-        if (error) {
-            deferred.reject('Error fetching commits from pull request ' + number + ' of ' + repo + ':', error);
-        } else {
+        if (error) return deferred.reject('Error fetching commits from pull request ' + number + ' of ' + repo + ':', error);
 
-            // Build an array of commit detail promises
-            commits.forEach(function(currentCommit) {
-                promises.push(getCommitDetail(repo, currentCommit.sha));
-            });
+        // Build an array of commit detail promises
+        commits.forEach(function(currentCommit) {
+            promises.push(getCommitDetail(repo, currentCommit.sha));
+        });
 
-            // When all of the commit detail promises have been resolved,
-            // resolve an array of commit detail
-            Q.all(promises).spread(function() {
-                deferred.resolve(Array.prototype.slice.call(arguments));
-            });
+        // When all of the commit detail promises have been resolved,
+        // resolve an array of commit detail
+        Q.all(promises).spread(function() {
+            deferred.resolve(Array.prototype.slice.call(arguments));
+        });
 
-        }
     });
 
     return deferred.promise;
