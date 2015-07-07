@@ -3,10 +3,12 @@
 var github = require('octonode');
 var path = require('path');
 var Q = require('q');
+
 var commenter = require('./commenter');
 var diff = require('./diffParse');
 var logger = require('./logger');
 var processor = require('./processor');
+var utils = require('./utils');
 
 var configFilename = '.doiuse';
 var githubClient = github.client();
@@ -94,9 +96,7 @@ function getConfig(repo, branch) {
         // Only replace the default config if the .doiuse file exists and has content
         if (!error && configFileMetadata.content) {
             // Consider text separated by commas and linebreaks to be individual options
-            config = new Buffer(configFileMetadata.content, 'base64').toString()
-                .replace(/\r?\n|\r/g, ', ')
-                .split(/,\s*/);
+            config = utils.prepareContent(configFileMetadata.content).replace(/\r?\n|\r/g, ', ').split(/,\s*/);
         }
 
         deferred.resolve(config);
