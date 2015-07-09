@@ -21,18 +21,18 @@
         "url": "http://groovecoder.com"
     }],
     "dependencies": {
-        "body-parser": "^1.6.6",
-        "doiuse": "^1.0.2",
-        "express": "^4.8.6",
+        "body-parser": "1.6.6",
+        "doiuse": "1.0.2",
+        "express": "4.8.6",
         "gulp": "3.8.11",
         "gulp-file-include": "0.11.0",
         "gulp-marked": "1.0.0",
         "octonode": "0.6.18",
-        "postcss": "^4.1.11",
+        "postcss": "4.1.11",
         "q": "1.4.1",
-        "request": "^2.40.0",
-        "source-map": "^0.4.2",
-        "stylus": "^0.51.1"
+        "request": "2.40.0",
+        "source-map": "0.4.2",
+        "stylus": "0.51.1"
     },
     "devDependencies": {
         "gulp-jsbeautifier": "0.0.8",

@@ -25,6 +25,12 @@ changes and execute Discord on your test repository code!  If warnings are found
 by Discord, they will show up as comments within the commit detail screen on
 GitHub.
 
+# Changing dependencies
+
+Use exact versions for dependencies in *package.json*. Always run `npm
+shrinkwrap` and commit *npm-shrinkwrap.json* after changing dependencies. Run
+`npm help shrinkwrap` for more information.
+
 # Submitting a pull request
 
 Before submitting a pull request, run the following commands to test your
