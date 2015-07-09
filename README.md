@@ -22,13 +22,16 @@ with the report results.
 
 ## Configuration
 
-To target only specific browsers, add a `.doiuse` file to the root of your
-repository with autoprefixer-like format. For example:
+To target specific browsers, add a `.doiuse` file to the root of your repository
+with autoprefixer-like format. For example:
 
 `ie >= 8, > 1%`
 
-If no `.doiuse` file is present, Discord will default to testing against
-the two most recent versions of popular browsers.
+Criteria can be separated by commas, newlines, or both.
+
+Stylesheets will be tested against browsers that match *any* of the criteria.
+If the `.doiuse` file is empty or not present, Discord will default to testing
+against the two most recent versions of all supported browsers.
 
 ## Reporting problems
 
