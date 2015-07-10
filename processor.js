@@ -1,7 +1,6 @@
 'use strict';
 
 var doiuse = require('doiuse');
-var github = require('octonode');
 var postcss = require('postcss');
 var sourceMap = require('source-map');
 var stylus = require('stylus');
@@ -9,12 +8,10 @@ var stylus = require('stylus');
 var logger = require('./logger');
 var utils = require('./utils');
 
-var githubClient = github.client(process.env.OAUTH_TOKEN);
-
 /**
  * Test and report on changes to the given CSS stylesheet.
  */
-function processCSS(repo, branch, file, config, handleIncompatibility) {
+function processCSS(githubClient, repo, branch, file, config, handleIncompatibility) {
     // Fetch the contents of the stylesheet
     githubClient.repo(repo).contents(file.filename, branch, function(error, fileContentsMetadata) {
         var fileContents;
@@ -37,7 +34,7 @@ function processCSS(repo, branch, file, config, handleIncompatibility) {
 /**
  * Test and report on changes to the given Stylus stylesheet.
  */
-function processStylus(repo, branch, file, config, handleIncompatibility) {
+function processStylus(githubClient, repo, branch, file, config, handleIncompatibility) {
     // Fetch the contents of the stylesheet
     githubClient.repo(repo).contents(file.filename, branch, function(error, fileContentsMetadata) {
         var fileContents, compiler;

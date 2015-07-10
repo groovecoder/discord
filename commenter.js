@@ -7,6 +7,7 @@
 
 var sendRequest = require('request');
 
+var config = require('./config');
 var logger = require('./logger');
 
 /**
@@ -15,12 +16,13 @@ var logger = require('./logger');
  * https://developer.github.com/v3/activity/events/types/#pullrequestevent
  */
 function postPullRequestComment(commentURL, comment, filename, commitSHA, line) {
+
     sendRequest({
         url: commentURL,
         method: 'POST',
         headers: {
-            'User-Agent': 'Discord',
-            'Authorization': 'token ' + process.env.OAUTH_TOKEN
+            'User-Agent': config.userAgent,
+            'Authorization': 'token ' + config.token
         },
         body: JSON.stringify({
             body: comment,

@@ -9,9 +9,10 @@ var diff = require('./diffParse');
 var logger = require('./logger');
 var processor = require('./processor');
 var utils = require('./utils');
+var config = require('./config');
 
 var configFilename = '.doiuse';
-var githubClient = github.client(process.env.OAUTH_TOKEN);
+var githubClient = github.client(config.token);
 
 /**
  * Handle requests to /hook.
@@ -76,7 +77,7 @@ function processPullRequest(destinationRepo, originRepo, originBranch, prNumber,
                         return;
                 }
 
-                process(originRepo, originBranch, file, config, handleIncompatibility);
+                process(githubClient, originRepo, originBranch, file, config, handleIncompatibility);
             });
         });
     }).catch(function(error) {
