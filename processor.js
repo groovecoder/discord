@@ -9,14 +9,14 @@ var stylus = require('stylus');
 var logger = require('./logger');
 var utils = require('./utils');
 
+var githubClient = github.client(process.env.OAUTH_TOKEN);
+
 /**
  * Test and report on changes to the given CSS stylesheet.
  */
 function processCSS(repo, branch, file, config, handleIncompatibility) {
-    var repoClient = github.client().repo(repo);
-
     // Fetch the contents of the stylesheet
-    repoClient.contents(file.filename, branch, function(error, fileContentsMetadata) {
+    githubClient.repo(repo).contents(file.filename, branch, function(error, fileContentsMetadata) {
         var fileContents;
 
         if (error) return logger.error('Error reading contents from ' + repo + ' / ' + branch + ' / ' + file.filename + ':', error);
@@ -38,10 +38,8 @@ function processCSS(repo, branch, file, config, handleIncompatibility) {
  * Test and report on changes to the given Stylus stylesheet.
  */
 function processStylus(repo, branch, file, config, handleIncompatibility) {
-    var repoClient = github.client().repo(repo);
-
     // Fetch the contents of the stylesheet
-    repoClient.contents(file.filename, branch, function(error, fileContentsMetadata) {
+    githubClient.repo(repo).contents(file.filename, branch, function(error, fileContentsMetadata) {
         var fileContents, compiler;
 
         if (error) return logger.error('Error reading contents from ' + repo + ' / ' + branch + ' / ' + file.filename + ':', error);

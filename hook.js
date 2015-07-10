@@ -11,7 +11,7 @@ var processor = require('./processor');
 var utils = require('./utils');
 
 var configFilename = '.doiuse';
-var githubClient = github.client();
+var githubClient = github.client(process.env.OAUTH_TOKEN);
 
 /**
  * Handle requests to /hook.
