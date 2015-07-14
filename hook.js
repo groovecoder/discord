@@ -1,7 +1,8 @@
 'use strict';
 
-var github = require('octonode');
 var path = require('path');
+
+var github = require('octonode');
 var Q = require('q');
 
 var commenter = require('./commenter');

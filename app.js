@@ -1,9 +1,10 @@
 'use strict';
 
+var path = require('path');
+
 var hook = require('./hook');
 var config = require('./config');
 var logger = require('./logger');
-var path = require('path');
 
 // Set up Express
 var express = require('express');
