@@ -1,4 +1,5 @@
 var fs = require('fs');
+var path = require('path');
 
 var chai = require('chai');
 var request = require('request');
@@ -12,7 +13,6 @@ var app = require('../app');
 var appHost = [config.protocol, '//', config.host, ':', config.port].join('');
 var githubHost = 'https://api.github.com';
 var urlPatterns = {
-    repo: '/repos/{repo}',
     pr: '/repos/{repo}/pulls/{number}',
     comment: '/repos/{repo}/pulls/{number}/comments',
     commits: '/repos/{repo}/pulls/{number}/commits',
@@ -34,7 +34,7 @@ var urlPatterns = {
     -  In bash shell:  mocha tests
 */
 
-describe('App Tests', function() {
+describe('Discord Tests', function() {
 
     /**
      * Test that the homepage returns the index.html static content
@@ -136,7 +136,7 @@ describe('App Tests', function() {
  * Grabs fixture content and returns their contents in JSON format
  */
 function getFileContents(fixture) {
-    return JSON.parse(fs.readFileSync('fixtures/' + fixture + '.json'));
+    return JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/' + fixture + '.json')));
 }
 
 /**
