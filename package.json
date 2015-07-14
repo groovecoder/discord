@@ -39,6 +39,7 @@
         "stylus": "^0.51.1"
     },
     "devDependencies": {
+        "chai": "3.0.0",
         "gulp-jsbeautifier": "0.0.8",
         "gulp-jshint": "1.10.0",
         "gulp-mocha": "2.1.3",
