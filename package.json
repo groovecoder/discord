@@ -19,6 +19,10 @@
         "name": "Luke Crouch",
         "email": "luke.crouch@gmail.com",
         "url": "http://groovecoder.com"
+    }, {
+        "name": "David Walsh",
+        "email": "dwalsh@mozilla.com",
+        "url": "http://davidwalsh.name"
     }],
     "dependencies": {
         "body-parser": "^1.6.6",
@@ -35,7 +39,10 @@
         "stylus": "^0.51.1"
     },
     "devDependencies": {
+        "chai": "3.0.0",
         "gulp-jsbeautifier": "0.0.8",
-        "gulp-jshint": "1.10.0"
+        "gulp-jshint": "1.10.0",
+        "gulp-mocha": "2.1.3",
+        "nock": "2.7.0"
     }
 }

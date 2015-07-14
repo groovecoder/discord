@@ -1,6 +1,6 @@
 'use strict';
 
-['log', 'warn', 'error'].forEach(function(level) {
+['log', 'warn', 'error', 'info'].forEach(function(level) {
     exports[level] = function() {
         var args = Array.prototype.slice.call(arguments);
         args.unshift('[' + level + ']');
