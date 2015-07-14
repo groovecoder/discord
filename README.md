@@ -33,6 +33,13 @@ Stylesheets will be tested against browsers that match *any* of the criteria.
 If the `.doiuse` file is empty or not present, Discord will default to testing
 against the two most recent versions of all supported browsers.
 
+## Testing
+To run Discord tests, execute the following command:
+
+`npm test`
+
+Discord uses mocha and chai test frameworks.
+
 ## Reporting problems
 
 Discord is under heavy development. Please [report any problems on GitHub](https://github.com/mdn/discord/issues).

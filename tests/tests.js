@@ -43,7 +43,7 @@ describe('Discord Tests', function() {
      */
     describe('Homepage Tests', function() {
         it('Should confirm homepage is working properly', function(done) {
-            request(appHost + '/index.html', function(error, response, body) {
+            request(appHost + '/', function(error, response, body) {
                 assert.ok(!error && response.statusCode === 200);
                 done();
             });
@@ -75,7 +75,7 @@ describe('Discord Tests', function() {
          *      -  The file has one CSS property which should trigger a warning
          *      -  If everything runs its course, there should be one call to the commenting endpoint
          */
-        it('Running simplest error case', function(done) {
+        it('Running simplest Discord case: 1 commit, 1 file, 1 expected comment', function(done) {
             var repoFullName = samplePayload.pull_request.base.repo.full_name;
 
             var commitsPayload = getFileContents('test1-commits');
