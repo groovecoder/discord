@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/mdn/discord.svg?branch=master)](https://travis-ci.org/mdn/discord)
+
 Discord adds comments to GitHub pull requests for CSS code that breaks browser
 compatibility.
 
