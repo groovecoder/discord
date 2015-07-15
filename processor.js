@@ -12,11 +12,13 @@ var utils = require('./utils');
  * Test and report on changes to the given CSS stylesheet.
  */
 function processCSS(githubClient, repo, branch, file, config, handleIncompatibility) {
+    var filename = file.filename;
+
     // Fetch the contents of the stylesheet
-    githubClient.repo(repo).contents(file.filename, branch, function(error, fileContentsMetadata) {
+    githubClient.repo(repo).contents(filename, branch, function(error, fileContentsMetadata) {
         var fileContents;
 
-        if (error) return logger.error('Error reading contents from ' + repo + ' / ' + branch + ' / ' + file.filename + ':', error);
+        if (error) return logger.error('Error reading contents from ' + repo + ' / ' + branch + ' / ' + filename + ':', error);
 
         fileContents = utils.prepareContent(fileContentsMetadata.content);
 
@@ -26,7 +28,7 @@ function processCSS(githubClient, repo, branch, file, config, handleIncompatibil
             browsers: config,
             onFeatureUsage: handleIncompatibility
         })).process(fileContents, {
-            from: '/' + file.filename
+            from: '/' + filename
         }).then(); // onFeatureUsage won't be called unless then() is called.
     });
 }
@@ -35,19 +37,21 @@ function processCSS(githubClient, repo, branch, file, config, handleIncompatibil
  * Test and report on changes to the given Stylus stylesheet.
  */
 function processStylus(githubClient, repo, branch, file, config, handleIncompatibility) {
+    var filename = file.filename;
+
     // Fetch the contents of the stylesheet
-    githubClient.repo(repo).contents(file.filename, branch, function(error, fileContentsMetadata) {
+    githubClient.repo(repo).contents(filename, branch, function(error, fileContentsMetadata) {
         var fileContents, compiler;
 
-        if (error) return logger.error('Error reading contents from ' + repo + ' / ' + branch + ' / ' + file.filename + ':', error);
+        if (error) return logger.error('Error reading contents from ' + repo + ' / ' + branch + ' / ' + filename + ':', error);
 
         fileContents = utils.prepareContent(fileContentsMetadata.content);
         compiler = stylus(fileContents)
-            .set('filename', file.filename)
+            .set('filename', filename)
             .set('sourcemap', {});
 
         compiler.render(function(error, compiledCSS) {
-            if (error) return logger.error('Error compiling Stylus of ' + repo + ' / ' + branch + ' / ' + file.filename + ':', error);
+            if (error) return logger.error('Error compiling Stylus of ' + repo + ' / ' + branch + ' / ' + filename + ':', error);
 
             // React to an incompatible line of Stylus. Compile the stylus with
             // a source map to get an accurate line number for the
@@ -70,7 +74,7 @@ function processStylus(githubClient, repo, branch, file, config, handleIncompati
                 browsers: config,
                 onFeatureUsage: handleStylusIncompatibility
             })).process(compiledCSS, {
-                from: '/' + file.filename
+                from: '/' + filename
             }).then(); // onFeatureUsage won't be called unless then() is called.
         });
     });
