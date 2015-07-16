@@ -131,6 +131,15 @@ describe('Discord Tests', function() {
                 });
         }
     });
+
+    /**
+     * We need to do cleanup so that the tests don't hang
+     */
+    describe('Test Cleanup', function() {
+        it('Server closes properly', function() {
+            app.listener.close();
+        });
+    });
 });
 
 
