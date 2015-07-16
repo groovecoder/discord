@@ -15,6 +15,7 @@ var app = express();
 app.use(bodyParser());
 app.use(express.static(path.join(__dirname, 'build/www')));
 app.post('/hook', hook.handle);
-app.listen(port);
+
+exports.listener = app.listen(port);
 
 logger.info('Listening at port:', port);
