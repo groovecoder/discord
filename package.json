@@ -3,6 +3,7 @@
     "main": "app.js",
     "private": true,
     "scripts": {
+        "start": "node app.js",
         "postinstall": "./gulp --gulpfile gulpfile-prod.js build",
         "test": "./gulp test"
     },
