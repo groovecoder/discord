@@ -4,6 +4,7 @@ var path = require('path');
 
 var github = require('octonode');
 var Q = require('q');
+var RateLimiter = require('limiter').RateLimiter;
 
 var commenter = require('./commenter');
 var diff = require('./diffParse');
@@ -14,6 +15,7 @@ var config = require('./config');
 
 var configFilename = '.doiuse';
 var githubClient = github.client(config.token);
+var commentLimiter = new RateLimiter(1, config.commentWait);
 
 /**
  * Handle requests to /hook.
@@ -63,7 +65,11 @@ function processPullRequest(destinationRepo, originRepo, originBranch, prNumber,
                 function handleIncompatibility(incompatibility) {
                     var line = diff.lineToIndex(file.patch, incompatibility.usage.source.start.line);
                     var comment = incompatibility.featureData.title + ' not supported by: ' + incompatibility.featureData.missing;
-                    commenter.postPullRequestComment(commentURL, comment, file.filename, currentCommit.sha, line);
+
+                    // Send this comment after commentWait expires
+                    commentLimiter.removeTokens(1, function() {
+                        commenter.postPullRequestComment(commentURL, comment, file.filename, currentCommit.sha, line);
+                    });
                 }
 
                 // Test and report on this file if it's a stylesheet
