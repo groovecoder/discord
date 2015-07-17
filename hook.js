@@ -1,7 +1,5 @@
 'use strict';
 
-var path = require('path');
-
 var github = require('octonode');
 var Q = require('q');
 
@@ -21,23 +19,24 @@ var githubClient = github.client(config.token);
 function handle(request, response) {
     var eventType = request.headers['x-github-event'];
     var metadata = request.body;
-    var originRepo;
+    var pr = metadata.pull_request;
+    var originRepo = pr.head.repo.full_name;
 
     response.status(200).send('OK');
 
     // React to pull requests only
     if (eventType === 'pull_request') {
-        originRepo = metadata.pull_request.head.repo.full_name;
-
         logger.log('Compatibility test requested from:', originRepo);
 
         processPullRequest(
             metadata.repository.full_name,
             originRepo,
-            metadata.pull_request.head.ref,
+            pr.head.ref,
             metadata.number,
-            metadata.pull_request.review_comments_url
+            pr.review_comments_url
         );
+    } else {
+        logger.info('Invalid event type (', eventType, ') requested by:', originRepo);
     }
 }
 
@@ -57,33 +56,18 @@ function processPullRequest(destinationRepo, originRepo, originBranch, prNumber,
 
             // And each file of each commit... and report on the changes.
             currentCommit.files.forEach(function(file) {
-                var process;
 
-                // Callback for handling an incompatible line of code
-                function handleIncompatibility(incompatibility) {
+                processor.process(githubClient, originRepo, originBranch, file, config, function(incompatibility) {
+                    // Callback for handling an incompatible line of code
                     var line = diff.lineToIndex(file.patch, incompatibility.usage.source.start.line);
                     var comment = incompatibility.featureData.title + ' not supported by: ' + incompatibility.featureData.missing;
                     commenter.postPullRequestComment(commentURL, comment, file.filename, currentCommit.sha, line);
-                }
+                });
 
-                // Test and report on this file if it's a stylesheet
-                switch (path.extname(file.filename).toLowerCase()) {
-                    case '.css':
-                        process = processor.processCSS;
-                        break;
-                    case '.styl':
-                        process = processor.processStylus;
-                        break;
-                    default:
-                        return;
-                }
-
-                process(githubClient, originRepo, originBranch, file, config, handleIncompatibility);
             });
+
         });
-    }).catch(function(error) {
-        logger.error(error);
-    });
+    }).catch(logger.error);
 }
 
 /**
