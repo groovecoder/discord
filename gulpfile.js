@@ -23,8 +23,5 @@ gulp.task('test:jshint', function() {
 });
 
 gulp.task('test:mocha', function() {
-    // The two `once` functions have been added because the gulp process
-    // doesn't always finish if there's an error or feedback condition:
-    // https://www.npmjs.com/package/gulp-mocha#test-suite-not-exiting
     gulp.src('tests/tests.js').pipe(mocha());
 });
