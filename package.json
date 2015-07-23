@@ -3,7 +3,7 @@
     "main": "app.js",
     "private": true,
     "scripts": {
-        "start": "node app.js",
+        "start": "node ./bin/www",
         "postinstall": "./gulp --gulpfile gulpfile-prod.js build",
         "test": "./gulp test"
     },
@@ -33,8 +33,8 @@
         "doiuse": "^1.0.2",
         "express": "^4.8.6",
         "gulp": "^3.8.11",
-        "gulp-file-include": "^0.11.0",
         "gulp-marked": "^1.0.0",
+        "nunjucks": "^1.3.4",
         "octonode": "^0.7.1",
         "postcss": "^4.1.11",
         "q": "^1.4.1",
