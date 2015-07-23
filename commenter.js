@@ -21,7 +21,7 @@ function postPullRequestComment(commentURL, comment, filename, commitSHA, line) 
         url: commentURL,
         method: 'POST',
         headers: {
-            'User-Agent': config.userAgent,
+            'User-Agent': config.brand,
             'Authorization': 'token ' + config.token
         },
         body: JSON.stringify({

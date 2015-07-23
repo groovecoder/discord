@@ -1,5 +1,5 @@
 var config = {
-    userAgent: 'Discord',
+    brand: 'Discord',
     token: process.env.OAUTH_TOKEN,
 
     // Used when no environment variable (process.env.PORT) is set
