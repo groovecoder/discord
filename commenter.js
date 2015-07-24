@@ -37,17 +37,17 @@ function postPullRequestComment(commentURL, comment, filename, commitSHA, line) 
         }, function(error,response,body) {
             if (error) logger.error('Error posting pull request comment to ' + commentURL + ' regarding commit ' + commitSHA + ':', error);
             if (body) logger.info('comment post accepted for ' + commitSHA +'.  Responded with '+body);
-            if (response.statusCode == 403) {
+            if (response.statusCode === 403) {
                 cb(false);
             }else{
                 cb(true);
             }
         });
-    })
+    });
 }
 
 function addCommentQueue(cb){
-    commentQueue.push(cb)
+    commentQueue.push(cb);
 }
 
 

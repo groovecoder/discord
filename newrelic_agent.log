@@ -1,0 +1,2 @@
+{"v":0,"level":50,"name":"newrelic","hostname":"Charlie","pid":32553,"time":"2015-07-30T06:50:24.212Z","msg":"A valid account license key cannot be found. Has a license key been specified in the agent configuration file or via the NEW_RELIC_LICENSE_KEY environment variable?"}
+{"v":0,"level":50,"name":"newrelic","hostname":"Charlie","pid":32553,"time":"2015-07-30T06:50:24.881Z","msg":"New Relic for Node.js halted startup due to an error:"}
