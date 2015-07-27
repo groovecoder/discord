@@ -10,7 +10,7 @@ var assert = chai.assert;
 
 var config = require('../config');
 var hook = require('../hook');
-var app = require('../app');
+var www = require('../bin/www');
 
 var appHost = [config.protocol, '//', config.host, ':', config.port].join('');
 var githubHost = 'https://api.github.com';
@@ -35,6 +35,10 @@ var urlPatterns = {
 
     -  In bash shell:  mocha tests
 */
+
+// Announce that automated tests are being run just in case other parts of the
+// application want to behave differently
+process.env.ENVIRONMENT = 'test';
 
 describe('Discord Tests', function() {
 
@@ -123,13 +127,24 @@ describe('Discord Tests', function() {
          * Creates an intercepter for the GitHub API endpoints that discord uses
          */
         function setupNock(urlPattern, data, payload, done, method) {
-            return nock(githubHost)
-                [method || 'get'](substitute(urlPattern, data))
+            return nock(githubHost)[method || 'get'](substitute(urlPattern, data))
                 .reply(function() {
-                    if(done) done();
+                    if (done) done();
                     return [200, payload];
                 });
         }
+    });
+
+    /**
+     * Test that errors are handled correctly
+     */
+    describe('Error Tests', function() {
+        it('Server returns a 404 when non-existent pages are requested', function(done) {
+            request(appHost + '/page-that-will-never-exist', function(error, response, body) {
+                assert.ok(response.statusCode === 404);
+                done();
+            });
+        });
     });
 
     /**
@@ -137,7 +152,7 @@ describe('Discord Tests', function() {
      */
     describe('Test Cleanup', function() {
         it('Server closes properly', function() {
-            app.listener.close();
+            www.server.close();
         });
     });
 });
@@ -154,7 +169,7 @@ function getFileContents(fixture) {
  * Simple substitution of ${propName} from an object
  */
 function substitute(str, data) {
-    return str.replace((/\\?\{([^{}]+)\}/g), function(match, name){
+    return str.replace((/\\?\{([^{}]+)\}/g), function(match, name) {
         if (match.charAt(0) == '\\') return match.slice(1);
         return (data[name] != null) ? data[name] : '';
     });

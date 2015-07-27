@@ -23,5 +23,9 @@ gulp.task('test:jshint', function() {
 });
 
 gulp.task('test:mocha', function() {
-    gulp.src('tests/tests.js').pipe(mocha());
+    gulp.src('tests/tests.js')
+        .pipe(mocha())
+        .once('end', function() {
+            process.exit();
+        });
 });

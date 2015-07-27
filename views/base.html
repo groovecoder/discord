@@ -2,7 +2,7 @@
 <html lang="en-US" dir="ltr">
     <head>
         <meta charset="utf-8" />
-        <title>Discord</title>
+        {% block header %}{% endblock %}
         <script>
             // Google Analytics
             (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
@@ -14,7 +14,6 @@
         </script>
     </head>
     <body>
-        @@include('includes/github-ribbon.html')
-        @@include('../build/html/includes/README.html')
+        {% block content %}{% endblock %}
     </body>
 </html>
