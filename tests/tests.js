@@ -1,5 +1,11 @@
 'use strict';
 
+// Set some environment variables that will be read during testing. To ensure
+// that our configuration is set accordingly, this needs to be done before
+// config.js is loaded anywhere.
+var testedTrackingID = '654321';
+process.env.TRACKING_ID = testedTrackingID;
+
 var fs = require('fs');
 var path = require('path');
 
@@ -24,6 +30,10 @@ var urlPatterns = {
     contents: '/repos/{repo}/contents/{path}?ref={branch}'
 };
 
+// Announce that automated tests are being run just in case other parts of the
+// application want to behave differently
+process.env.ENVIRONMENT = 'test';
+
 /*
     How to scrub the payloads taken from test repo/user:
 
@@ -37,10 +47,6 @@ var urlPatterns = {
 
     -  In bash shell:  mocha tests
 */
-
-// Announce that automated tests are being run just in case other parts of the
-// application want to behave differently
-process.env.ENVIRONMENT = 'test';
 
 describe('Discord Tests', function() {
 
@@ -67,6 +73,17 @@ describe('Discord Tests', function() {
                 });
             });
 
+        });
+
+        it('The Google Analytics tracking code is present in pages', function(done) {
+            request(homepageURL, function(error, response, body) {
+                assert.include(body, testedTrackingID);
+
+                request(notFoundURL, function(error, response, body) {
+                    assert.include(body, testedTrackingID);
+                    done();
+                });
+            });
         });
     });
 
