@@ -13,6 +13,8 @@ var hook = require('../hook');
 var www = require('../bin/www');
 
 var appHost = [config.protocol, '//', config.host, ':', config.port].join('');
+var homepageURL = appHost + '/';
+var notFoundURL = appHost + '/page-that-will-never-exist';
 var githubHost = 'https://api.github.com';
 var urlPatterns = {
     pr: '/repos/{repo}/pulls/{number}',
@@ -45,12 +47,26 @@ describe('Discord Tests', function() {
     /**
      * Test that the homepage returns the index.html static content
      */
-    describe('Homepage Tests', function() {
+    describe('Landing Page Tests', function() {
         it('Should confirm homepage is working properly', function(done) {
-            request(appHost + '/', function(error, response, body) {
+            request(homepageURL, function(error, response, body) {
                 assert.ok(!error && response.statusCode === 200);
                 done();
             });
+        });
+
+        // The title of the homepage should be the brand name. All other pages
+        // should have a unique title and the brand name separated by a pipe.
+        it('Page titles are set correctly', function(done) {
+            request(homepageURL, function(error, response, body) {
+                assert.include(body, '<title>' + config.brand + '</title>');
+
+                request(notFoundURL, function(error, response, body) {
+                    assert.include(body, ' | ' + config.brand + '</title>');
+                    done();
+                });
+            });
+
         });
     });
 
@@ -140,7 +156,7 @@ describe('Discord Tests', function() {
      */
     describe('Error Tests', function() {
         it('Server returns a 404 when non-existent pages are requested', function(done) {
-            request(appHost + '/page-that-will-never-exist', function(error, response, body) {
+            request(notFoundURL, function(error, response, body) {
                 assert.ok(response.statusCode === 404);
                 done();
             });
