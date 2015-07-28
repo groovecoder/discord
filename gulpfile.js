@@ -5,13 +5,19 @@ var beautify = require('gulp-jsbeautifier');
 var jshint = require('gulp-jshint');
 var mocha = require('gulp-mocha');
 
+var js = ['*.js', 'tests/*.js', 'bin/*.js'];
+
 gulp.task('beautify', ['beautify:javascript']);
 
 gulp.task('beautify:javascript', function() {
-    gulp.src(['*.js', '*.json']).pipe(beautify({
-        indentSize: 4,
-        keepFunctionIndentation: true
-    })).pipe(gulp.dest('./'));
+    gulp.src(js.concat('*.json'), {
+            base: './'
+        })
+        .pipe(beautify({
+            indentSize: 4,
+            keepFunctionIndentation: true
+        }))
+        .pipe(gulp.dest('./'));
 });
 
 gulp.task('test', ['test:jshint', 'test:mocha']);
