@@ -96,8 +96,8 @@ describe('Discord Tests', function() {
      */
     describe('Hook Tests', function() {
 
-        var samplePayload = getFileContents('test1-payload');
-        var sampleHeaders = getFileContents('test1-headers');
+        var samplePayload = getFileContents('test1', 'payload');
+        var sampleHeaders = getFileContents('test1', 'headers');
 
         /**
          * Test that the hook returns a 200 when posted to
@@ -119,9 +119,9 @@ describe('Discord Tests', function() {
         it('Running simplest Discord case: 1 commit, 1 file, 1 expected comment', function(done) {
             var repoFullName = samplePayload.pull_request.base.repo.full_name;
 
-            var commitsPayload = getFileContents('test1-commits');
-            var commit1Payload = getFileContents('test1-commit1');
-            var commit1Contents = getFileContents('test1-commit1-contents');
+            var commitsPayload = getFileContents('test1', 'commits');
+            var commit1Payload = getFileContents('test1', 'commit1');
+            var commit1Contents = getFileContents('test1', 'commit1-contents');
             var prNumber = samplePayload.pull_request.number;
 
             setupNock(urlPatterns.commits, {
@@ -198,8 +198,8 @@ describe('Discord Tests', function() {
 /**
  * Grabs fixture content and returns their contents in JSON format
  */
-function getFileContents(fixture) {
-    return JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/' + fixture + '.json')));
+function getFileContents(testNumber, fixture) {
+    return JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/' + testNumber + '/' + fixture + '.json')));
 }
 
 /**
