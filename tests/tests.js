@@ -19,7 +19,6 @@ var nock = require('nock');
 var assert = chai.assert;
 
 var config = require('../config');
-var hook = require('../hook');
 var www = require('../bin/www');
 
 var appHost = [config.protocol, '//', config.host, ':', config.port].join('');
@@ -207,7 +206,7 @@ function getFileContents(testNumber, fixture) {
  */
 function substitute(str, data) {
     return str.replace((/\\?\{([^{}]+)\}/g), function(match, name) {
-        if (match.charAt(0) == '\\') return match.slice(1);
-        return (data[name] != null) ? data[name] : '';
+        if (match.charAt(0) === '\\') return match.slice(1);
+        return (data[name] !== null) ? data[name] : '';
     });
 }

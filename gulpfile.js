@@ -23,7 +23,7 @@ gulp.task('beautify:javascript', function() {
 gulp.task('test', ['test:jshint', 'test:mocha']);
 
 gulp.task('test:jshint', function() {
-    return gulp.src('*.js')
+    return gulp.src(js)
         .pipe(jshint())
         .pipe(jshint.reporter('default'));
 });
