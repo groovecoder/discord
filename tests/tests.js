@@ -1,5 +1,15 @@
 'use strict';
 
+// Set environment variables that will be read during testing. These values will
+// be read in config.js, so they need to be set before the file is loaded.
+var testedTrackingID = '654321';
+process.env.TRACKING_ID = testedTrackingID;
+
+// Pretend that we're running in production mode so that we can test
+// production-only features like Google Analytics tracking. This value is read
+// in app.js, so it needs to be set before the file is loaded.
+process.env.NODE_ENV = 'production';
+
 var fs = require('fs');
 var path = require('path');
 
@@ -13,6 +23,8 @@ var hook = require('../hook');
 var www = require('../bin/www');
 
 var appHost = [config.protocol, '//', config.host, ':', config.port].join('');
+var homepageURL = appHost + '/';
+var notFoundURL = appHost + '/page-that-will-never-exist';
 var githubHost = 'https://api.github.com';
 var urlPatterns = {
     pr: '/repos/{repo}/pulls/{number}',
@@ -21,6 +33,10 @@ var urlPatterns = {
     commit: '/repos/{repo}/commits/{sha}',
     contents: '/repos/{repo}/contents/{path}?ref={branch}'
 };
+
+// Announce that automated tests are being run just in case other parts of the
+// application want to behave differently
+process.env.RUNNING_TESTS = true;
 
 /*
     How to scrub the payloads taken from test repo/user:
@@ -36,20 +52,41 @@ var urlPatterns = {
     -  In bash shell:  mocha tests
 */
 
-// Announce that automated tests are being run just in case other parts of the
-// application want to behave differently
-process.env.ENVIRONMENT = 'test';
-
 describe('Discord Tests', function() {
 
     /**
      * Test that the homepage returns the index.html static content
      */
-    describe('Homepage Tests', function() {
+    describe('Landing Page Tests', function() {
         it('Should confirm homepage is working properly', function(done) {
-            request(appHost + '/', function(error, response, body) {
+            request(homepageURL, function(error, response, body) {
                 assert.ok(!error && response.statusCode === 200);
                 done();
+            });
+        });
+
+        // The title of the homepage should be the brand name. All other pages
+        // should have a unique title and the brand name separated by a pipe.
+        it('Page titles are set correctly', function(done) {
+            request(homepageURL, function(error, response, body) {
+                assert.include(body, '<title>' + config.brand + '</title>');
+
+                request(notFoundURL, function(error, response, body) {
+                    assert.include(body, ' | ' + config.brand + '</title>');
+                    done();
+                });
+            });
+
+        });
+
+        it('The Google Analytics tracking code is present in pages', function(done) {
+            request(homepageURL, function(error, response, body) {
+                assert.include(body, testedTrackingID);
+
+                request(notFoundURL, function(error, response, body) {
+                    assert.include(body, testedTrackingID);
+                    done();
+                });
             });
         });
     });
@@ -140,7 +177,7 @@ describe('Discord Tests', function() {
      */
     describe('Error Tests', function() {
         it('Server returns a 404 when non-existent pages are requested', function(done) {
-            request(appHost + '/page-that-will-never-exist', function(error, response, body) {
+            request(notFoundURL, function(error, response, body) {
                 assert.ok(response.statusCode === 404);
                 done();
             });

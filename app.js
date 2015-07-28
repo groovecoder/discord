@@ -8,6 +8,8 @@ var path = require('path');
 var hook = require('./hook');
 var config = require('./config');
 
+var env;
+
 // Set up Express
 var app = express();
 app.use(bodyParser.json());
@@ -15,19 +17,21 @@ app.use(bodyParser.urlencoded({
     extended: true
 }));
 
-// Set up views
+// Set up Nunjucks
 app.set('views', path.join(__dirname, 'views'));
-nunjucks.configure('views', {
+env = nunjucks.configure('views', {
     autoescape: true,
     express: app
 });
 
+// Global template variables
+env.addGlobal('brand', config.brand);
+env.addGlobal('trackingID', config.trackingID);
+env.addGlobal('NODE_ENV', process.env.NODE_ENV);
+
 // Homepage
 app.get('/', function(request, response) {
-    var context = {
-        title: config.brand
-    };
-    response.render('index.html', context);
+    response.render('index.html');
 });
 
 // Hook
@@ -45,7 +49,7 @@ app.use(function(request, response, next) {
 // Express to correctly identify it as error middleware.
 app.use(function(error, request, response, next) {
     var context = {
-        title: error.message + ' | ' + config.brand,
+        title: error.message,
         message: error.message
     };
 
