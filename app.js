@@ -27,6 +27,7 @@ env = nunjucks.configure('views', {
 // Global template variables
 env.addGlobal('brand', config.brand);
 env.addGlobal('trackingID', config.trackingID);
+env.addGlobal('NODE_ENV', process.env.NODE_ENV);
 
 // Homepage
 app.get('/', function(request, response) {

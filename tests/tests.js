@@ -1,10 +1,14 @@
 'use strict';
 
-// Set some environment variables that will be read during testing. To ensure
-// that our configuration is set accordingly, this needs to be done before
-// config.js is loaded anywhere.
+// Set environment variables that will be read during testing. These values will
+// be read in config.js, so they need to be set before the file is loaded.
 var testedTrackingID = '654321';
 process.env.TRACKING_ID = testedTrackingID;
+
+// Pretend that we're running in production mode so that we can test
+// production-only features like Google Analytics tracking. This value is read
+// in app.js, so it needs to be set before the file is loaded.
+process.env.NODE_ENV = 'production';
 
 var fs = require('fs');
 var path = require('path');
@@ -32,7 +36,7 @@ var urlPatterns = {
 
 // Announce that automated tests are being run just in case other parts of the
 // application want to behave differently
-process.env.ENVIRONMENT = 'test';
+process.env.RUNNING_TESTS = true;
 
 /*
     How to scrub the payloads taken from test repo/user:
