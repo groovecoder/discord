@@ -17,12 +17,14 @@ gulp.task('beautify:javascript', function() {
 gulp.task('test', ['test:jshint', 'test:mocha']);
 
 gulp.task('test:jshint', function() {
-    gulp.src('*.js')
+    return gulp.src('*.js')
         .pipe(jshint())
         .pipe(jshint.reporter('default'));
 });
 
-gulp.task('test:mocha', function() {
+// Make the Mocha task depend on the JSHint task. Otherwise, the tasks will be
+// run in parallel and will print to console simultaneously.
+gulp.task('test:mocha', ['test:jshint'], function() {
     gulp.src('tests/tests.js')
         .pipe(mocha())
         .once('end', function() {
