@@ -1,6 +1,7 @@
 {
     "browser": true,
     "node": true,
+    "mocha": true,
 
     "bitwise": true,
     "curly": false,
