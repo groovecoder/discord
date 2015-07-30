@@ -7,4 +7,5 @@ node_modules
 npm-debug.log
 
 # Discord
-views/includes/README.html
+/views/includes/README.html
+/newrelic_agent.log
