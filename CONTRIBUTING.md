@@ -11,7 +11,10 @@ the contribution workflow at this point.
    create a token
 4. From the terminal, add your newly created GitHub personal access token to the
    Heroku config:  heroku config:set OAUTH_TOKEN=#######
-5. Create a test repository which you'll send invalid CSS or Stylus files to,
+5. Enable the Heroku Redis add-on (you may need to enter a credit card for
+   verification): `heroku addons:create heroku-redis:hobby-dev`
+6. Start a worker: `heroku ps:scale worker=1`
+7. Create a test repository which you'll send invalid CSS or Stylus files to,
    which your Discord instance will evaluate. Within that repository:
     1. Navigate to *Settings* > *Webhooks and Services*
     2. Add a webhook
@@ -27,9 +30,24 @@ GitHub.
 
 # Submitting a pull request
 
-Before submitting a pull request, run the following commands to test your
-changes and spruce things up.
+Before submitting a pull request, follow these steps to spruce things up and
+test your changes.
 
-1. `npm install`
-2. `./gulp test`
-3. `./gulp beautify`
+## Setup
+
+To get started, install all dependencies and set up Redis:
+
+1. Run `npm install`
+2. Follow [these steps](http://redis.io/topics/quickstart#installing-redis)
+   to install a local Redis server
+
+## Beautify your code
+
+Run this command to format your code according to our conventions:
+
+`./gulp beautify`
+
+## Run tests
+
+1. Start the local Redis server
+2. Run `./gulp test`
