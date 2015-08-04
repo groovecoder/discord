@@ -23,7 +23,7 @@ var nock = require('nock');
 var assert = chai.assert;
 
 var testUtils = require('./test-utils');
-var config = require('../config');
+var config = require('../lib/config');
 var www = require('../bin/www');
 
 var notFoundURL = testUtils.appHost + '/page-that-will-never-exist';
