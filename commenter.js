@@ -8,15 +8,13 @@
 var sendRequest = require('request');
 
 var config = require('./config');
-var logger = require('./logger');
 
 /**
  * Post a line comment on a particular pull request. commentURL should be an
  * instance of review_comments_url.
  * https://developer.github.com/v3/activity/events/types/#pullrequestevent
  */
-function postPullRequestComment(commentURL, comment, filename, commitSHA, line) {
-
+function postPullRequestComment(commentURL, comment, filename, commitSHA, line, done) {
     sendRequest({
         url: commentURL,
         method: 'POST',
@@ -30,8 +28,14 @@ function postPullRequestComment(commentURL, comment, filename, commitSHA, line) 
             commit_id: commitSHA,
             position: line
         })
-    }, function(error) {
-        if (error) return logger.error('Error posting pull request comment to ' + commentURL + ' regarding commit ' + commitSHA + ':', error);
+    }, function(error, response) {
+        // If the comment could not be submitted, notify Redis so that the job
+        // can be re-attempted later. Otherwise, mark the job as done.
+        if (error || response.statusCode === 403) {
+            return done(new Error('Comment could not be submitted'));
+        } else {
+            done();
+        }
     });
 }
 
