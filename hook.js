@@ -3,12 +3,12 @@
 var github = require('octonode');
 var Q = require('q');
 
-var commenter = require('./commenter');
 var diff = require('./diffParse');
 var logger = require('./logger');
 var processor = require('./processor');
 var utils = require('./utils');
 var config = require('./config');
+var redisQueue = require('./redisQueue');
 
 var configFilename = '.doiuse';
 var githubClient = github.client(config.token);
@@ -61,7 +61,32 @@ function processPullRequest(destinationRepo, originRepo, originBranch, prNumber,
                     // Callback for handling an incompatible line of code
                     var line = diff.lineToIndex(file.patch, incompatibility.usage.source.start.line);
                     var comment = incompatibility.featureData.title + ' not supported by: ' + incompatibility.featureData.missing;
-                    commenter.postPullRequestComment(commentURL, comment, file.filename, currentCommit.sha, line);
+
+                    // Create a Redis job that will submit the comment
+                    var commentJob = redisQueue.create('comment', {
+                        commentURL: commentURL,
+                        sha: currentCommit.sha,
+                        filename: file.filename,
+                        line: line,
+                        comment: comment
+                    });
+
+                    // If the comment is rejected, re-attempt several times with
+                    // exponentially longer waits between each attempt.
+                    commentJob.attempts(config.commentAttempts);
+                    commentJob.backoff({
+                        type: 'exponential'
+                    });
+
+                    // If the comment is rejected after several attempts, log an
+                    // error.
+                    commentJob.on('failed', function() {
+                        logger.error('Error posting comment to line ' + line + ' of ' + file.filename + ' in ' + originRepo + ' pull request #' + prNumber);
+                    });
+
+                    commentJob.save(function(error) {
+                        if (error) return logger.error(error);
+                    });
                 });
 
             });

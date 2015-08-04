@@ -1,14 +1,19 @@
 'use strict';
 
-// Set environment variables that will be read during testing. These values will
-// be read in config.js, so they need to be set before the file is loaded.
+// Set environment variables that will be needed during testing. These values
+// will be read in config.js, so they need to be set before the file is loaded.
 var testedTrackingID = '654321';
 process.env.TRACKING_ID = testedTrackingID;
+process.env.REDIS_URL = 'redis://localhost';
+process.env.COMMENT_WAIT = 0; // The comment wait is only needed in production to avoid tripping a GitHub spam protection system
 
 // Pretend that we're running in production mode so that we can test
 // production-only features like Google Analytics tracking. This value is read
 // in app.js, so it needs to be set before the file is loaded.
 process.env.NODE_ENV = 'production';
+
+// Process Redis tasks
+require('../worker');
 
 var fs = require('fs');
 var path = require('path');
