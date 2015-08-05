@@ -16,45 +16,22 @@ process.env.NODE_ENV = 'production';
 require('../worker');
 
 var fs = require('fs');
-var path = require('path');
 
 var chai = require('chai');
 var request = require('request');
 var nock = require('nock');
 var assert = chai.assert;
 
+var testUtils = require('./test-utils');
 var config = require('../config');
 var www = require('../bin/www');
 
-var appHost = [config.protocol, '//', config.host, ':', config.port].join('');
-var homepageURL = appHost + '/';
-var notFoundURL = appHost + '/page-that-will-never-exist';
-var githubHost = 'https://api.github.com';
-var urlPatterns = {
-    pr: '/repos/{repo}/pulls/{number}',
-    comment: '/repos/{repo}/pulls/{number}/comments',
-    commits: '/repos/{repo}/pulls/{number}/commits',
-    commit: '/repos/{repo}/commits/{sha}',
-    contents: '/repos/{repo}/contents/{path}?ref={branch}'
-};
+var notFoundURL = testUtils.appHost + '/page-that-will-never-exist';
 
 // Announce that automated tests are being run just in case other parts of the
 // application want to behave differently
 process.env.RUNNING_TESTS = true;
 
-/*
-    How to scrub the payloads taken from test repo/user:
-
-    -  Change username to `x_user`
-    -  Change respository name to `x_repo`
-    -  Change sender.id to `8675309`
-    -  Change user's real name to `Test User`
-    -  Change user's real email to `testuser@somewhere.com`
-
-    How to run tests:
-
-    -  In bash shell:  mocha tests
-*/
 
 describe('Discord Tests', function() {
 
@@ -63,7 +40,7 @@ describe('Discord Tests', function() {
      */
     describe('Landing Page Tests', function() {
         it('Should confirm homepage is working properly', function(done) {
-            request(homepageURL, function(error, response, body) {
+            request(testUtils.appHost, function(error, response, body) {
                 assert.ok(!error && response.statusCode === 200);
                 done();
             });
@@ -72,7 +49,7 @@ describe('Discord Tests', function() {
         // The title of the homepage should be the brand name. All other pages
         // should have a unique title and the brand name separated by a pipe.
         it('Page titles are set correctly', function(done) {
-            request(homepageURL, function(error, response, body) {
+            request(testUtils.appHost, function(error, response, body) {
                 assert.include(body, '<title>' + config.brand + '</title>');
 
                 request(notFoundURL, function(error, response, body) {
@@ -84,7 +61,7 @@ describe('Discord Tests', function() {
         });
 
         it('The Google Analytics tracking code is present in pages', function(done) {
-            request(homepageURL, function(error, response, body) {
+            request(testUtils.appHost, function(error, response, body) {
                 assert.include(body, testedTrackingID);
 
                 request(notFoundURL, function(error, response, body) {
@@ -98,82 +75,74 @@ describe('Discord Tests', function() {
     /**
      * Tests related to pull requests sent to the hook
      */
-    describe('Hook Tests', function() {
-
-        var samplePayload = getFileContents('test1', 'payload');
-        var sampleHeaders = getFileContents('test1', 'headers');
+    describe('Basic Hook Tests', function() {
 
         /**
          * Test that the hook returns a 200 when posted to
          */
         it('Hook returns a 200 OK when posted to', function(done) {
-            sendPost(function(error, response, body) {
+            sendPost('1', function(error, response, body) {
                 assert.ok(!error && response.statusCode === 200 && body === 'OK');
                 done();
             });
         });
 
-        /**
-         * Tests that the "test1" PR performs the functions which its conditions match:
-         *      -  A pull request with 1 commit
-         *      -  The commit has one file
-         *      -  The file has one CSS property which should trigger a warning
-         *      -  If everything runs its course, there should be one call to the commenting endpoint
-         */
-        it('Running simplest Discord case: 1 commit, 1 file, 1 expected comment', function(done) {
-            var repoFullName = samplePayload.pull_request.base.repo.full_name;
+    });
 
-            var commitsPayload = getFileContents('test1', 'commits');
-            var commit1Payload = getFileContents('test1', 'commit1');
-            var commit1Contents = getFileContents('test1', 'commit1-contents');
-            var prNumber = samplePayload.pull_request.number;
+    /**
+     * Run tests on recorded PRs
+     */
+    describe('Recorded Hook Tests', function() {
 
-            setupNock(urlPatterns.commits, {
-                repo: repoFullName,
-                number: prNumber
-            }, commitsPayload);
+        // Recurse through each recorded test
+        // Ultimate pass/fail measure is dependant upon number of comments POSTed
+        getDirectories(testUtils.fixturesDir).forEach(function(testDir, index) {
 
-            setupNock(urlPatterns.commit, {
-                repo: repoFullName,
-                sha: commit1Payload.sha
-            }, commit1Payload);
+            var plainIndex = index + 1;
+            var manifest = testUtils.getFileContents(plainIndex, 'manifest');
 
-            setupNock(urlPatterns.contents, {
-                repo: repoFullName,
-                path: commit1Payload.files[0].filename,
-                branch: samplePayload.pull_request.head.ref
-            }, commit1Contents);
+            // Start the test definition
+            it('Recorded test ' + plainIndex + ': ' + manifest.description, function(done) {
+                this.timeout(5000);
 
-            // Since the goal (success) is posting one comment, if this URL is matched, we've succeeded
-            setupNock(urlPatterns.comment, {
-                repo: repoFullName,
-                number: prNumber
-            }, '', done, 'post');
+                var item;
 
-            sendPost();
+                for (var url in manifest.urls) {
+                    if (manifest.urls.hasOwnProperty(url)) {
+
+                        item = manifest.urls[url];
+
+                        setupNock(
+                            url,
+                            item,
+                            item.method.toLowerCase(),
+                            testUtils.getFileContents(plainIndex, item.file),
+                            manifest
+                        );
+                    }
+                }
+
+                // Kick the test off
+                sendPost(plainIndex);
+
+                // Utility to setup the nock and lock variables into place
+                function setupNock(url, item, requestType, payload, manifest) {
+                    var completedPosts = 0;
+
+                    nock(testUtils.githubHost).persist()[requestType](url).reply(function() {
+                        if (requestType === 'post') completedPosts++;
+
+                        if (completedPosts === manifest.posts) {
+                            done();
+                            nock.cleanAll(); // Cleanup so there's no interfering with other tests
+                        }
+
+                        return [200, payload];
+                    });
+                }
+            });
+
         });
-
-        /**
-         * Sends a basic POST to the discord hook endpoint
-         */
-        function sendPost(cb) {
-            request.post({
-                url: appHost + '/hook',
-                headers: sampleHeaders,
-                form: samplePayload
-            }, cb);
-        }
-
-        /**
-         * Creates an intercepter for the GitHub API endpoints that discord uses
-         */
-        function setupNock(urlPattern, data, payload, done, method) {
-            return nock(githubHost)[method || 'get'](substitute(urlPattern, data))
-                .reply(function() {
-                    if (done) done();
-                    return [200, payload];
-                });
-        }
     });
 
     /**
@@ -198,20 +167,22 @@ describe('Discord Tests', function() {
     });
 });
 
-
 /**
- * Grabs fixture content and returns their contents in JSON format
+ * Sends a basic POST to the discord hook endpoint
  */
-function getFileContents(testNumber, fixture) {
-    return JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/' + testNumber + '/' + fixture + '.json')));
+function sendPost(testDir, cb) {
+    request.post({
+        url: testUtils.appHost + '/hook',
+        headers: testUtils.getFileContents(testDir, 'headers'),
+        form: testUtils.getFileContents(testDir, 'payload')
+    }, cb || function() {});
 }
 
 /**
- * Simple substitution of ${propName} from an object
+ * Reads a directory and finds immeidate subdirectories
  */
-function substitute(str, data) {
-    return str.replace((/\\?\{([^{}]+)\}/g), function(match, name) {
-        if (match.charAt(0) === '\\') return match.slice(1);
-        return (data[name] !== null) ? data[name] : '';
+function getDirectories(path) {
+    return fs.readdirSync(path).filter(function(file) {
+        return fs.statSync(path + '/' + file).isDirectory();
     });
 }
