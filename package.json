@@ -37,9 +37,12 @@
         "newrelic": "^1.21.1",
         "nunjucks": "^1.3.4",
         "octonode": "^0.7.1",
+        "pg": "^4.4.1",
+        "pg-hstore": "^2.3.2",
         "postcss": "^4.1.11",
         "q": "^1.4.1",
         "request": "^2.40.0",
+        "sequelize": "^3.5.1",
         "source-map": "^0.4.2",
         "stylus": "^0.51.1"
     },
@@ -49,6 +52,7 @@
         "gulp-jshint": "^1.10.0",
         "gulp-mocha": "^2.1.3",
         "nock": "^2.7.0",
+        "sequelize-cli": "^1.7.4",
         "yargs": "3.16.1"
     }
 }
