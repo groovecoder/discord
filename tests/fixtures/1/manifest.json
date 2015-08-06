@@ -1,0 +1,26 @@
+{
+  "urls": {
+    "/repos/darkwing/YouShouldUseTest/contents/.doiuse?ref=redis-test": {
+      "file": "repos-darkwing-YouShouldUseTest-contents-.doiuse?ref=redis-test.json",
+      "method": "GET"
+    },
+    "/repos/darkwing/YouShouldUseTest/pulls/42/commits": {
+      "file": "repos-darkwing-YouShouldUseTest-pulls-42-commits.json",
+      "method": "GET"
+    },
+    "/repos/darkwing/YouShouldUseTest/commits/583ff031e39a2c61b694dc3b223e6a1907d1ce3a": {
+      "file": "repos-darkwing-YouShouldUseTest-commits-583ff031e39a2c61b694dc3b223e6a1907d1ce3a.json",
+      "method": "GET"
+    },
+    "/repos/darkwing/YouShouldUseTest/contents/incompatible.css?ref=redis-test": {
+      "file": "repos-darkwing-YouShouldUseTest-contents-incompatible.css?ref=redis-test.json",
+      "method": "GET"
+    },
+    "/repos/darkwing/YouShouldUseTest/pulls/42/comments": {
+      "file": "repos-darkwing-YouShouldUseTest-pulls-42-comments.json",
+      "method": "POST"
+    }
+  },
+  "description": "IE6+ .doiuse file which should result in 20 comments on one file in one commit",
+  "posts": 20
+}

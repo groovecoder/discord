@@ -6,11 +6,11 @@
  * Module dependencies.
  */
 
-var app = require('../app');
 var http = require('http');
 
-var config = require('../config');
-var logger = require('../logger');
+var app = require('../app');
+var config = require('../lib/config');
+var logger = require('../lib/logger');
 
 /**
  * Get port from environment and store in Express.
