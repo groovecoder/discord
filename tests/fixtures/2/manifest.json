@@ -1,0 +1,38 @@
+{
+  "urls": {
+    "/repos/darkwing/YouShouldUseTest/contents/.doiuse?ref=test-2": {
+      "file": "repos-darkwing-YouShouldUseTest-contents-.doiuse?ref=test-2.json",
+      "method": "GET"
+    },
+    "/repos/darkwing/YouShouldUseTest/pulls/50/commits": {
+      "file": "repos-darkwing-YouShouldUseTest-pulls-50-commits.json",
+      "method": "GET"
+    },
+    "/repos/darkwing/YouShouldUseTest/commits/3e8d98f1e62a1c38d52be1c17cef5f415ec455ac": {
+      "file": "repos-darkwing-YouShouldUseTest-commits-3e8d98f1e62a1c38d52be1c17cef5f415ec455ac.json",
+      "method": "GET"
+    },
+    "/repos/darkwing/YouShouldUseTest/commits/462e02517a1d0cbeffd693315bfed3fa2658b4ac": {
+      "file": "repos-darkwing-YouShouldUseTest-commits-462e02517a1d0cbeffd693315bfed3fa2658b4ac.json",
+      "method": "GET"
+    },
+    "/repos/darkwing/YouShouldUseTest/contents/newest.css?ref=test-2": {
+      "file": "repos-darkwing-YouShouldUseTest-contents-newest.css?ref=test-2.json",
+      "method": "GET"
+    },
+    "/repos/darkwing/YouShouldUseTest/contents/main.css?ref=test-2": {
+      "file": "repos-darkwing-YouShouldUseTest-contents-main.css?ref=test-2.json",
+      "method": "GET"
+    },
+    "/repos/darkwing/YouShouldUseTest/contents/new.css?ref=test-2": {
+      "file": "repos-darkwing-YouShouldUseTest-contents-new.css?ref=test-2.json",
+      "method": "GET"
+    },
+    "/repos/darkwing/YouShouldUseTest/pulls/50/comments": {
+      "file": "repos-darkwing-YouShouldUseTest-pulls-50-comments.json",
+      "method": "POST"
+    }
+  },
+  "description": "Two commits, removing item from existing file, adding item to new file, adding a completely new file with item",
+  "posts": 18
+}

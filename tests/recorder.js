@@ -27,7 +27,7 @@ var request = require('request');
 var yargs = require('yargs').argv;
 
 var testUtils = require('./test-utils');
-var logger = require('../logger');
+var logger = require('../lib/logger');
 
 // Run the server
 require('../bin/www');

@@ -1,0 +1,22 @@
+{
+  "urls": {
+    "/repos/darkwing/YouShouldUseTest/contents/.doiuse?ref=test-4": {
+      "file": "repos-darkwing-YouShouldUseTest-contents-.doiuse?ref=test-4.json",
+      "method": "GET"
+    },
+    "/repos/darkwing/YouShouldUseTest/pulls/52/commits": {
+      "file": "repos-darkwing-YouShouldUseTest-pulls-52-commits.json",
+      "method": "GET"
+    },
+    "/repos/darkwing/YouShouldUseTest/commits/fc525b42136bf43d0680e5a16dc8f0ce940a92b2": {
+      "file": "repos-darkwing-YouShouldUseTest-commits-fc525b42136bf43d0680e5a16dc8f0ce940a92b2.json",
+      "method": "GET"
+    },
+    "/repos/darkwing/YouShouldUseTest/contents/main-move.css?ref=test-4": {
+      "file": "repos-darkwing-YouShouldUseTest-contents-main-move.css?ref=test-4.json",
+      "method": "GET"
+    }
+  },
+  "description": "Moving a CSS file prompts 0 comments",
+  "posts": 0
+}
