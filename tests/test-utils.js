@@ -8,7 +8,7 @@ var config = require('../lib/config');
 module.exports = {
 
     // The host for local Discord
-    appHost: [config.protocol, '//', config.host, ':', config.port].join(''),
+    appHost: [config('protocol'), '//', config('host'), ':', config('port')].join(''),
 
     // Track hostname for GitHub
     githubHost: 'https://api.github.com',

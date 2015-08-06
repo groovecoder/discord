@@ -12,7 +12,7 @@ redisQueue.process('comment', function(job, done) {
     var now = Date.now();
     var waitRemaining = 0;
 
-    var nextCommentTimestamp = lastCommentTimestamp + parseInt(config.commentWait);
+    var nextCommentTimestamp = lastCommentTimestamp + parseInt(config('commentWait'));
 
     if (nextCommentTimestamp > now) {
         waitRemaining = nextCommentTimestamp - now;
