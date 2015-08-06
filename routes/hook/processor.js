@@ -7,8 +7,8 @@ var postcss = require('postcss');
 var sourceMap = require('source-map');
 var stylus = require('stylus');
 
-var logger = require('./logger');
-var utils = require('./utils');
+var logger = require('../../lib/logger');
+var utils = require('../../lib/utils');
 
 
 

@@ -1,8 +1,8 @@
 'use strict';
 
-var commenter = require('./commenter');
-var config = require('./config');
-var redisQueue = require('./redisQueue');
+var commenter = require('./lib/commenter');
+var config = require('./lib/config');
+var redisQueue = require('./lib/redisQueue');
 
 var lastCommentTimestamp = 0;
 

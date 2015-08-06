@@ -5,7 +5,7 @@ var beautify = require('gulp-jsbeautifier');
 var jshint = require('gulp-jshint');
 var mocha = require('gulp-mocha');
 
-var js = ['*.js', 'tests/*.js', 'bin/*.js'];
+var js = ['**/*.js', '!node_modules/**/*.js'];
 
 gulp.task('beautify', ['beautify:javascript']);
 

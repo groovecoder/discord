@@ -5,10 +5,12 @@ if (process.env.NEW_RELIC_LICENSE_KEY) require('newrelic');
 var express = require('express');
 var bodyParser = require('body-parser');
 var nunjucks = require('nunjucks');
-var path = require('path');
 
-var hook = require('./hook');
-var config = require('./config');
+var config = require('./lib/config');
+
+// Routes
+var index = require('./routes/index/index');
+var hook = require('./routes/hook/index');
 
 var env;
 
@@ -20,7 +22,6 @@ app.use(bodyParser.urlencoded({
 }));
 
 // Set up Nunjucks
-app.set('views', path.join(__dirname, 'views'));
 env = nunjucks.configure('views', {
     autoescape: true,
     express: app
@@ -31,13 +32,8 @@ env.addGlobal('brand', config.brand);
 env.addGlobal('trackingID', config.trackingID);
 env.addGlobal('NODE_ENV', process.env.NODE_ENV);
 
-// Homepage
-app.get('/', function(request, response) {
-    response.render('index.html');
-});
-
-// Hook
-app.post('/hook', hook.handle);
+app.use('/', index);
+app.use('/hook', hook);
 
 // Catch 404s and forward them to the error handler
 app.use(function(request, response, next) {
