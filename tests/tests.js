@@ -1,16 +1,8 @@
 'use strict';
 
-// Set environment variables that will be needed during testing. These values
-// will be read in config.js, so they need to be set before the file is loaded.
-var testedTrackingID = '654321';
-process.env.TRACKING_ID = testedTrackingID;
-process.env.REDIS_URL = 'redis://localhost';
-process.env.COMMENT_WAIT = 0; // The comment wait is only needed in production to avoid tripping a GitHub spam protection system
-
-// Pretend that we're running in production mode so that we can test
-// production-only features like Google Analytics tracking. This value is read
-// in app.js, so it needs to be set before the file is loaded.
-process.env.NODE_ENV = 'production';
+// This value is read in config.js, so it needs to be set before the file is
+// loaded anywhere.
+process.env.NODE_ENV = 'test';
 
 // Process Redis tasks
 require('../worker');
@@ -30,7 +22,6 @@ var notFoundURL = testUtils.appHost + '/page-that-will-never-exist';
 
 // Announce that automated tests are being run just in case other parts of the
 // application want to behave differently
-process.env.RUNNING_TESTS = true;
 
 
 describe('Discord Tests', function() {
@@ -50,10 +41,10 @@ describe('Discord Tests', function() {
         // should have a unique title and the brand name separated by a pipe.
         it('Page titles are set correctly', function(done) {
             request(testUtils.appHost, function(error, response, body) {
-                assert.include(body, '<title>' + config.brand + '</title>');
+                assert.include(body, '<title>' + config('brand') + '</title>');
 
                 request(notFoundURL, function(error, response, body) {
-                    assert.include(body, ' | ' + config.brand + '</title>');
+                    assert.include(body, ' | ' + config('brand') + '</title>');
                     done();
                 });
             });
@@ -62,10 +53,10 @@ describe('Discord Tests', function() {
 
         it('The Google Analytics tracking code is present in pages', function(done) {
             request(testUtils.appHost, function(error, response, body) {
-                assert.include(body, testedTrackingID);
+                assert.include(body, config('trackingID'));
 
                 request(notFoundURL, function(error, response, body) {
-                    assert.include(body, testedTrackingID);
+                    assert.include(body, config('trackingID'));
                     done();
                 });
             });
