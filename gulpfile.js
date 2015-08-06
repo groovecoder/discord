@@ -6,11 +6,12 @@ var jshint = require('gulp-jshint');
 var mocha = require('gulp-mocha');
 
 var js = ['**/*.js', '!node_modules/**/*.js'];
+var json = ['**/*.json', '!node_modules/**/*.json', '!tests/fixtures/**/*.json'];
 
 gulp.task('beautify', ['beautify:javascript']);
 
 gulp.task('beautify:javascript', function() {
-    gulp.src(js.concat('*.json'), {
+    gulp.src(js.concat(json), {
             base: './'
         })
         .pipe(beautify({
