@@ -1,0 +1,18 @@
+{
+  "urls": {
+    "/repos/darkwing/YouShouldUseTest/contents/.doiuse?ref=test-3": {
+      "file": "repos-darkwing-YouShouldUseTest-contents-.doiuse?ref=test-3.json",
+      "method": "GET"
+    },
+    "/repos/darkwing/YouShouldUseTest/pulls/51/commits": {
+      "file": "repos-darkwing-YouShouldUseTest-pulls-51-commits.json",
+      "method": "GET"
+    },
+    "/repos/darkwing/YouShouldUseTest/commits/b713d41591b84faf3034f7c0291cea51e87076af": {
+      "file": "repos-darkwing-YouShouldUseTest-commits-b713d41591b84faf3034f7c0291cea51e87076af.json",
+      "method": "GET"
+    }
+  },
+  "description": "A PR with a change only to a JS file prompts 0 comments",
+  "posts": 0
+}
