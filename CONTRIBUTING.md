@@ -11,10 +11,12 @@ the contribution workflow at this point.
    create a token
 4. From the terminal, add your newly created GitHub personal access token to the
    Heroku config:  heroku config:set OAUTH_TOKEN=#######
-5. Enable the Heroku Redis add-on (you may need to enter a credit card for
+5. Enable the Heroku Postgres add-on: `heroku addons:create
+   heroku-postgresql:hobby-dev`
+6. Enable the Heroku Redis add-on (you may need to enter a credit card for
    verification): `heroku addons:create heroku-redis:hobby-dev`
-6. Start a worker: `heroku ps:scale worker=1`
-7. Create a test repository which you'll send invalid CSS or Stylus files to,
+7. Start a worker: `heroku ps:scale worker=1`
+8. Create a test repository which you'll send invalid CSS or Stylus files to,
    which your Discord instance will evaluate. Within that repository:
     1. Navigate to *Settings* > *Webhooks and Services*
     2. Add a webhook
