@@ -33,21 +33,6 @@ GitHub.
 Before submitting a pull request, follow these steps to spruce things up and
 test your changes.
 
-## Setup
-
-To get started, install all dependencies and set up Redis:
-
-1. Run `npm install`
-2. Follow [these steps](http://redis.io/topics/quickstart#installing-redis)
-   to install a local Redis server
-
-## Beautify your code
-
-Run this command to format your code according to our conventions:
-
-`./gulp beautify`
-
-## Run tests
-
-1. Start the local Redis server
-2. Run `./gulp test`
+1. Run `npm install` to install some dependencies
+2. Run `./gulp beautify` to format your code according to our conventions
+3. [Run tests](docs/TESTING.md) and verify that they pass
