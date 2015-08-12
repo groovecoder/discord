@@ -151,7 +151,7 @@ describe('Discord Tests', function() {
     describe('Error Tests', function() {
         it('Server returns a 404 when non-existent pages are requested', function(done) {
             request(notFoundURL, function(error, response, body) {
-                assert.ok(response.statusCode === 404);
+                assert.equal(response.statusCode, 404);
                 done();
             });
         });
