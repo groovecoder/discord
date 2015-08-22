@@ -13,6 +13,7 @@ var logger = require('../../lib/logger');
 var utils = require('../../lib/utils');
 var config = require('../../lib/config');
 var redisQueue = require('../../lib/redisQueue');
+var models = require('../../models');
 
 var configFilename = '.doiuse';
 var githubClient = github.client(config.token);
@@ -20,13 +21,21 @@ var githubClient = github.client(config.token);
 router.post('/', function(request, response) {
     var eventType = request.headers['x-github-event'];
     var metadata = request.body;
-    var pr = metadata.pull_request;
-    var originRepo = pr.head.repo.full_name;
+    var pr, originRepo;
 
     response.status(200).send('OK');
 
-    // React to pull requests only
-    if (eventType === 'pull_request') {
+    if (eventType === 'ping') {
+        originRepo = metadata.repository.full_name;
+
+        // Record that someone installed Discord
+        models.Ping.create({
+            repo: originRepo
+        });
+    } else if (eventType === 'pull_request') {
+        pr = metadata.pull_request;
+        originRepo = pr.head.repo.full_name;
+
         logger.log('Compatibility test requested from:', originRepo);
 
         processPullRequest(
@@ -47,10 +56,10 @@ router.post('/', function(request, response) {
  */
 function processPullRequest(destinationRepo, originRepo, originBranch, prNumber, commentURL) {
     var commits = getPullRequestCommits(destinationRepo, prNumber);
-    var config = getConfig(originRepo, originBranch);
+    var doiuseConfig = getConfig(originRepo, originBranch);
 
     // Once we have pulled down commit metadata and doiuse configuration...
-    Q.all([commits, config]).spread(function(commits, config) {
+    Q.all([commits, doiuseConfig]).spread(function(commits, doiuseConfig) {
 
         // Go through each commit...
         commits.forEach(function(currentCommit) {
@@ -58,7 +67,7 @@ function processPullRequest(destinationRepo, originRepo, originBranch, prNumber,
             // And each file of each commit... and report on the changes.
             currentCommit.files.forEach(function(file) {
 
-                processor.process(githubClient, originRepo, originBranch, file, config, function(incompatibility) {
+                processor.process(githubClient, originRepo, originBranch, file, doiuseConfig, function(incompatibility) {
                     // Callback for handling an incompatible line of code
                     var line = diff.lineToIndex(file.patch, incompatibility.usage.source.start.line);
                     var comment = incompatibility.featureData.title + ' not supported by: ' + incompatibility.featureData.missing;
@@ -103,15 +112,15 @@ function getConfig(repo, branch) {
     var deferred = Q.defer();
 
     githubClient.repo(repo).contents(configFilename, branch, function(error, configFileMetadata) {
-        var config = ['last 2 versions']; // Default configuration
+        var doiuseConfig = ['last 2 versions']; // Default configuration
 
         // Only replace the default config if the .doiuse file exists and has content
         if (!error && configFileMetadata.content) {
             // Consider text separated by commas and linebreaks to be individual options
-            config = utils.prepareContent(configFileMetadata.content).replace(/\r?\n|\r/g, ', ').split(/,\s*/);
+            doiuseConfig = utils.prepareContent(configFileMetadata.content).replace(/\r?\n|\r/g, ', ').split(/,\s*/);
         }
 
-        deferred.resolve(config);
+        deferred.resolve(doiuseConfig);
     });
 
     return deferred.promise;

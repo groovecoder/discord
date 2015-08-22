@@ -36,11 +36,8 @@ If the `.doiuse` file is empty or not present, Discord will default to testing
 against the two most recent versions of all supported browsers.
 
 ## Testing
-To run Discord tests, execute the following command:
 
-`npm test`
-
-Discord uses mocha and chai test frameworks.
+See [TESTING.md](docs/TESTING.md) for more information.
 
 ## Reporting problems
 
