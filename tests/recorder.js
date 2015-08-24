@@ -18,16 +18,13 @@
 
 */
 
-process.env.REDIS_URL = 'redis://localhost';
-process.env.COMMENT_WAIT = 0; // The comment wait is only needed in production to avoid tripping a GitHub spam protection system
-
 var nock = require('nock');
 var fs = require('fs');
 var request = require('request');
 var yargs = require('yargs').argv;
 
 var testUtils = require('./test-utils');
-var logger = require('../logger');
+var logger = require('../lib/logger');
 
 // Run the server
 require('../bin/www');

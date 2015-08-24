@@ -1,0 +1,9 @@
+{
+    "Request URL": "http://fathomless-earth-1980.herokuapp.com/hook",
+    "Request method": "POST",
+    "content-type": "application/json",
+    "Expect": "",
+    "User-Agent": "GitHub-Hookshot/29237e4",
+    "X-GitHub-Delivery": "0ae5cd80-3c9e-11e5-95d3-b2e8684af350",
+    "X-GitHub-Event": "ping"
+}

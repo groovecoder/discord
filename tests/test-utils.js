@@ -8,7 +8,7 @@ var config = require('../lib/config');
 module.exports = {
 
     // The host for local Discord
-    appHost: [config.protocol, '//', config.host, ':', config.port].join(''),
+    appHost: 'http://localhost:' + config.port,
 
     // Track hostname for GitHub
     githubHost: 'https://api.github.com',
@@ -16,14 +16,20 @@ module.exports = {
     // Directory for fixtures
     fixturesDir: path.join(__dirname, 'fixtures/'),
 
+    // Directory for recorded fixtures
+    recordedFixturesDir: path.join(__dirname, 'fixtures/recorded/'),
+
+    // Directory for non-recorded fixtures
+    nonRecordedFixturesDir: path.join(__dirname, 'fixtures/non-recorded/'),
+
     // Builds a file path to a local test fixture JSON file
-    getFileContents: function(testNumber, fixture) {
+    getFileContents: function(directory, fixture) {
         var split = fixture.split('.');
         if (split.pop().toLowerCase() === 'json') {
             fixture = split.join('.');
         }
 
-        return JSON.parse(fs.readFileSync(this.fixturesDir + testNumber + '/' + fixture + '.json'));
-    }
+        return JSON.parse(fs.readFileSync(directory + '/' + fixture + '.json'));
+    },
 
 };

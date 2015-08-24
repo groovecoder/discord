@@ -9,8 +9,8 @@ var nunjucks = require('nunjucks');
 var config = require('./lib/config');
 
 // Routes
-var index = require('./routes/index/index');
-var hook = require('./routes/hook/index');
+var index = require('./routes/index');
+var hook = require('./routes/hook');
 
 var env;
 

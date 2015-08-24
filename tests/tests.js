@@ -1,17 +1,5 @@
 'use strict';
 
-// Set environment variables that will be needed during testing. These values
-// will be read in config.js, so they need to be set before the file is loaded.
-var testedTrackingID = '654321';
-process.env.TRACKING_ID = testedTrackingID;
-process.env.REDIS_URL = 'redis://localhost';
-process.env.COMMENT_WAIT = 0; // The comment wait is only needed in production to avoid tripping a GitHub spam protection system
-
-// Pretend that we're running in production mode so that we can test
-// production-only features like Google Analytics tracking. This value is read
-// in app.js, so it needs to be set before the file is loaded.
-process.env.NODE_ENV = 'production';
-
 // Process Redis tasks
 require('../worker');
 
@@ -25,15 +13,17 @@ var assert = chai.assert;
 var testUtils = require('./test-utils');
 var config = require('../lib/config');
 var www = require('../bin/www');
+var models = require('../models');
 
 var notFoundURL = testUtils.appHost + '/page-that-will-never-exist';
 
-// Announce that automated tests are being run just in case other parts of the
-// application want to behave differently
-process.env.RUNNING_TESTS = true;
-
-
 describe('Discord Tests', function() {
+    this.timeout(5000); // Travis can be a little slow
+
+    beforeEach(function() {
+        // Truncate the Ping table before each test
+        models.Ping.truncate();
+    });
 
     /**
      * Test that the homepage returns the index.html static content
@@ -62,10 +52,10 @@ describe('Discord Tests', function() {
 
         it('The Google Analytics tracking code is present in pages', function(done) {
             request(testUtils.appHost, function(error, response, body) {
-                assert.include(body, testedTrackingID);
+                assert.include(body, config.trackingID);
 
                 request(notFoundURL, function(error, response, body) {
-                    assert.include(body, testedTrackingID);
+                    assert.include(body, config.trackingID);
                     done();
                 });
             });
@@ -81,7 +71,7 @@ describe('Discord Tests', function() {
          * Test that the hook returns a 200 when posted to
          */
         it('Hook returns a 200 OK when posted to', function(done) {
-            sendPost('1', function(error, response, body) {
+            sendHookPayload(testUtils.recordedFixturesDir + '1', function(error, response, body) {
                 assert.ok(!error && response.statusCode === 200 && body === 'OK');
                 done();
             });
@@ -96,15 +86,13 @@ describe('Discord Tests', function() {
 
         // Recurse through each recorded test
         // Ultimate pass/fail measure is dependant upon number of comments POSTed
-        getDirectories(testUtils.fixturesDir).forEach(function(testDir, index) {
+        getDirectories(testUtils.recordedFixturesDir).forEach(function(testDir, index) {
 
             var plainIndex = index + 1;
-            var manifest = testUtils.getFileContents(plainIndex, 'manifest');
+            var manifest = testUtils.getFileContents(testUtils.recordedFixturesDir + plainIndex.toString(), 'manifest');
 
             // Start the test definition
             it('Recorded test ' + plainIndex + ': ' + manifest.description, function(done) {
-                this.timeout(5000);
-
                 var item;
 
                 for (var url in manifest.urls) {
@@ -116,14 +104,14 @@ describe('Discord Tests', function() {
                             url,
                             item,
                             item.method.toLowerCase(),
-                            testUtils.getFileContents(plainIndex, item.file),
+                            testUtils.getFileContents(testUtils.recordedFixturesDir + plainIndex.toString(), item.file),
                             manifest
                         );
                     }
                 }
 
                 // Kick the test off
-                sendPost(plainIndex);
+                sendHookPayload(testUtils.recordedFixturesDir + plainIndex.toString());
 
                 // Utility to setup the nock and lock variables into place
                 function setupNock(url, item, requestType, payload, manifest) {
@@ -151,8 +139,61 @@ describe('Discord Tests', function() {
     describe('Error Tests', function() {
         it('Server returns a 404 when non-existent pages are requested', function(done) {
             request(notFoundURL, function(error, response, body) {
-                assert.ok(response.statusCode === 404);
+                assert.equal(response.statusCode, 404);
                 done();
+            });
+        });
+    });
+
+    /**
+     * Test that the database is updated correctly
+     */
+    describe('Database Tests', function() {
+        describe('Ping', function() {
+            it('Ping events are recorded', function(done) {
+                models.Ping.count().then(function(countBeforePing) {
+                    assert.equal(countBeforePing, 0);
+
+                    // Send a ping
+                    sendHookPayload(testUtils.nonRecordedFixturesDir + '1', function(error, response, body) {
+                        models.Ping.count().then(function(countAfterPing) {
+                            assert.equal(countAfterPing, 1);
+
+                            // Send another ping
+                            sendHookPayload(testUtils.nonRecordedFixturesDir + '1', function(error, response, body) {
+                                models.Ping.count().then(function(countAfterPing) {
+                                    assert.equal(countAfterPing, 2);
+                                    done();
+                                });
+                            });
+                        });
+                    });
+                });
+            });
+
+            it('Date is correct', function(done) {
+                var timeBeforePing = Date.now();
+
+                sendHookPayload(testUtils.nonRecordedFixturesDir + '1', function(error, response, body) {
+                    models.Ping.findOne({
+                        id: 1
+                    }).then(function(ping) {
+                        var timeAfterPing = Date.parse(ping.dataValues.createdAt);
+                        assert.isAbove(timeBeforePing, timeAfterPing);
+                        done();
+                    });
+                });
+            });
+
+            it('Repository is correct', function(done) {
+                sendHookPayload(testUtils.nonRecordedFixturesDir + '1', function(error, response, body) {
+                    models.Ping.findOne({
+                        id: 1
+                    }).then(function(ping) {
+                        assert.equal(ping.dataValues.repo, 'openjck/discord-test');
+                        done();
+                    });
+                });
             });
         });
     });
@@ -170,7 +211,7 @@ describe('Discord Tests', function() {
 /**
  * Sends a basic POST to the discord hook endpoint
  */
-function sendPost(testDir, cb) {
+function sendHookPayload(testDir, cb) {
     request.post({
         url: testUtils.appHost + '/hook',
         headers: testUtils.getFileContents(testDir, 'headers'),
