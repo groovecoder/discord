@@ -1,0 +1,31 @@
+{
+    "name": "discord",
+    "scripts": {},
+    "env": {
+        "COMMENT_ATTEMPTS": {
+            "required": true
+        },
+        "COMMENT_WAIT": {
+            "required": true
+        },
+        "NEW_RELIC_APP_NAME": {
+            "required": false
+        },
+        "NEW_RELIC_HIGH_SECURITY": {
+            "required": false
+        },
+        "NODE_ENV": {
+            "required": true
+        },
+        "OAUTH_TOKEN": {
+            "required": true
+        },
+        "TRACKING_ID": {
+            "required": false
+        }
+    },
+    "addons": [
+        "heroku-redis",
+        "heroku-postgresql"
+    ]
+}
