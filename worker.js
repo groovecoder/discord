@@ -1,9 +1,13 @@
 'use strict';
 
+var kue = require('kue');
+
 var commenter = require('./lib/commenter');
 var config = require('./lib/config');
-var redisQueue = require('./lib/redisQueue');
 
+var redisQueue = kue.createQueue({
+    redis: config.redisURL
+});
 var lastCommentTimestamp = 0;
 
 // Process comment jobs

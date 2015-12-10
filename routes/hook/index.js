@@ -4,6 +4,7 @@ var express = require('express');
 var router = express.Router();
 
 var github = require('octonode');
+var kue = require('kue');
 var Q = require('q');
 
 var processor = require('./processor');
@@ -12,7 +13,6 @@ var diff = require('./diffParse');
 var logger = require('../../lib/logger');
 var utils = require('../../lib/utils');
 var config = require('../../lib/config');
-var redisQueue = require('../../lib/redisQueue');
 var models = require('../../models');
 
 var configFilename = '.doiuse';
@@ -71,6 +71,10 @@ function processPullRequest(destinationRepo, originRepo, originBranch, prNumber,
                     // Callback for handling an incompatible line of code
                     var line = diff.lineToIndex(file.patch, incompatibility.usage.source.start.line);
                     var comment = incompatibility.featureData.title + ' not supported by: ' + incompatibility.featureData.missing;
+
+                    var redisQueue = kue.createQueue({
+                        redis: config.redisURL
+                    });
 
                     // Create a Redis job that will submit the comment
                     var commentJob = redisQueue.create('comment', {
