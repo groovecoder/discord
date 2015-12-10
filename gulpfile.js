@@ -68,7 +68,9 @@ gulp.task('test:mocha', ['build', 'test:jshint'], function() {
     process.env.NODE_ENV = 'test';
 
     // Create database tables from scratch and run the tests
-    models.sequelize.sync({ force: true }).then(function() {
+    models.sequelize.sync({
+        force: true
+    }).then(function() {
         gulp.src('tests/tests.js')
             .pipe(mocha())
             .once('end', function() {
