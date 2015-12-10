@@ -15,7 +15,7 @@ var utils = require('../../lib/utils');
 var config = require('../../lib/config');
 var models = require('../../models');
 
-var configFilename = '.doiuse';
+var configFilename = '.discord';
 var githubClient = github.client(config.token);
 
 router.post('/', function(request, response) {
@@ -56,10 +56,10 @@ router.post('/', function(request, response) {
  */
 function processPullRequest(destinationRepo, originRepo, originBranch, prNumber, commentURL) {
     var commits = getPullRequestCommits(destinationRepo, prNumber);
-    var doiuseConfig = getConfig(originRepo, originBranch);
+    var discordConfig = getConfig(originRepo, originBranch);
 
-    // Once we have pulled down commit metadata and doiuse configuration...
-    Q.all([commits, doiuseConfig]).spread(function(commits, doiuseConfig) {
+    // Once we have pulled down commit metadata and Discord configuration...
+    Q.all([commits, discordConfig]).spread(function(commits, discordConfig) {
 
         // Go through each commit...
         commits.forEach(function(currentCommit) {
@@ -67,7 +67,7 @@ function processPullRequest(destinationRepo, originRepo, originBranch, prNumber,
             // And each file of each commit... and report on the changes.
             currentCommit.files.forEach(function(file) {
 
-                processor.process(githubClient, originRepo, originBranch, file, doiuseConfig, function(incompatibility) {
+                processor.process(githubClient, originRepo, originBranch, file, discordConfig, function(incompatibility) {
                     // Callback for handling an incompatible line of code
                     var line = diff.lineToIndex(file.patch, incompatibility.usage.source.start.line);
                     var comment = incompatibility.featureData.title + ' not supported by: ' + incompatibility.featureData.missing;
@@ -110,21 +110,21 @@ function processPullRequest(destinationRepo, originRepo, originBranch, prNumber,
 }
 
 /**
- * Get the doiuse configuration of a repository at a particular branch.
+ * Get the Discord configuration for a repository at a particular branch.
  */
 function getConfig(repo, branch) {
     var deferred = Q.defer();
 
     githubClient.repo(repo).contents(configFilename, branch, function(error, configFileMetadata) {
-        var doiuseConfig = ['last 2 versions']; // Default configuration
+        var discordConfig = ['last 2 versions']; // Default configuration
 
-        // Only replace the default config if the .doiuse file exists and has content
+        // Only replace the default config if the configuration file exists and has content
         if (!error && configFileMetadata.content) {
             // Consider text separated by commas and linebreaks to be individual options
-            doiuseConfig = utils.prepareContent(configFileMetadata.content).replace(/\r?\n|\r/g, ', ').split(/,\s*/);
+            discordConfig = utils.prepareContent(configFileMetadata.content).replace(/\r?\n|\r/g, ', ').split(/,\s*/);
         }
 
-        deferred.resolve(doiuseConfig);
+        deferred.resolve(discordConfig);
     });
 
     return deferred.promise;

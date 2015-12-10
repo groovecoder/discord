@@ -15,16 +15,16 @@ Follow these instructions to add Discord to your GitHub repository:
 
 ## Configuration
 
-To target specific browsers, add a `.doiuse` file to the root of your repository
-with [Browserslist queries](https://github.com/ai/browserslist#queries). For
-example:
+To target specific browsers, add a `.discord` file to the root of your
+repository with [Browserslist queries](https://github.com/ai/browserslist#queries).
+For example:
 
 `ie >= 8, > 1%`
 
 Criteria can be separated by commas, newlines, or both.
 
 Stylesheets will be tested against browsers that match *any* of the criteria.
-If the `.doiuse` file is empty or not present, Discord will default to testing
+If the `.discord` file is empty or not present, Discord will default to testing
 against the two most recent versions of all supported browsers.
 
 ## Testing

@@ -1,7 +1,7 @@
 {
   "urls": {
-    "/repos/darkwing/YouShouldUseTest/contents/.doiuse?ref=test-2": {
-      "file": "repos-darkwing-YouShouldUseTest-contents-.doiuse?ref=test-2.json",
+    "/repos/darkwing/YouShouldUseTest/contents/.discord?ref=test-2": {
+      "file": "repos-darkwing-YouShouldUseTest-contents-.discord?ref=test-2.json",
       "method": "GET"
     },
     "/repos/darkwing/YouShouldUseTest/pulls/50/commits": {
