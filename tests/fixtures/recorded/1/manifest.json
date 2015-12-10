@@ -1,7 +1,7 @@
 {
   "urls": {
-    "/repos/darkwing/YouShouldUseTest/contents/.doiuse?ref=redis-test": {
-      "file": "repos-darkwing-YouShouldUseTest-contents-.doiuse?ref=redis-test.json",
+    "/repos/darkwing/YouShouldUseTest/contents/.discord?ref=redis-test": {
+      "file": "repos-darkwing-YouShouldUseTest-contents-.discord?ref=redis-test.json",
       "method": "GET"
     },
     "/repos/darkwing/YouShouldUseTest/pulls/42/commits": {
@@ -21,6 +21,6 @@
       "method": "POST"
     }
   },
-  "description": "IE6+ .doiuse file which should result in 20 comments on one file in one commit",
+  "description": "IE6+ .discord file which should result in 20 comments on one file in one commit",
   "posts": 20
 }
