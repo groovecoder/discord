@@ -28,7 +28,7 @@
     }],
     "dependencies": {
         "body-parser": "^1.6.6",
-        "doiuse": "^1.0.2",
+        "doiuse": "^2.2.1",
         "express": "^4.8.6",
         "gulp": "^3.8.11",
         "gulp-marked": "^1.0.0",
