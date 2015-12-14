@@ -34,6 +34,7 @@ env.addGlobal('NODE_ENV', process.env.NODE_ENV);
 
 app.use('/', index);
 app.use('/hook', hook);
+app.use('/docs', express.static(__dirname + '/docs'));
 
 // Catch 404s and forward them to the error handler
 app.use(function(request, response, next) {
