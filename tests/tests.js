@@ -9,7 +9,6 @@ var chai = require('chai');
 var request = require('request');
 var assert = chai.assert;
 
-var commenter = require('../lib/commenter');
 var config = require('../lib/config');
 var www = require('../bin/www');
 var models = require('../models');
@@ -94,23 +93,7 @@ describe('Discord Tests', function() {
 
             // Start the test definition
             it('Recorded test ' + plainIndex + ': ' + manifest.description, function(done) {
-                var item;
-
-                for (var url in manifest.urls) {
-                    if (manifest.urls.hasOwnProperty(url)) {
-
-                        item = manifest.urls[url];
-
-                        testUtils.setupNock(
-                            url,
-                            item,
-                            item.method.toLowerCase(),
-                            testUtils.getFileContents(testUtils.recordedFixturesDir + plainIndex.toString(), item.file),
-                            manifest,
-                            done
-                        );
-                    }
-                }
+                testUtils.setupNocksForManifest(manifest, plainIndex, done);
 
                 // Kick the test off
                 sendHookPayload(testUtils.recordedFixturesDir + plainIndex.toString());
