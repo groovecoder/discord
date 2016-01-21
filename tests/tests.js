@@ -7,13 +7,14 @@ var fs = require('fs');
 
 var chai = require('chai');
 var request = require('request');
-var nock = require('nock');
 var assert = chai.assert;
 
-var testUtils = require('./test-utils');
+var commenter = require('../lib/commenter');
 var config = require('../lib/config');
 var www = require('../bin/www');
 var models = require('../models');
+
+var testUtils = require('./test-utils');
 
 var notFoundURL = testUtils.appHost + '/page-that-will-never-exist';
 
@@ -100,34 +101,19 @@ describe('Discord Tests', function() {
 
                         item = manifest.urls[url];
 
-                        setupNock(
+                        testUtils.setupNock(
                             url,
                             item,
                             item.method.toLowerCase(),
                             testUtils.getFileContents(testUtils.recordedFixturesDir + plainIndex.toString(), item.file),
-                            manifest
+                            manifest,
+                            done
                         );
                     }
                 }
 
                 // Kick the test off
                 sendHookPayload(testUtils.recordedFixturesDir + plainIndex.toString());
-
-                // Utility to setup the nock and lock variables into place
-                function setupNock(url, item, requestType, payload, manifest) {
-                    var completedPosts = 0;
-
-                    nock(testUtils.githubHost).persist()[requestType](url).reply(function() {
-                        if (requestType === 'post') completedPosts++;
-
-                        if (completedPosts === manifest.posts) {
-                            done();
-                            nock.cleanAll(); // Cleanup so there's no interfering with other tests
-                        }
-
-                        return [200, payload];
-                    });
-                }
             });
 
         });
@@ -150,6 +136,7 @@ describe('Discord Tests', function() {
      */
     describe('Database Tests', function() {
         describe('Ping', function() {
+
             it('Ping events are recorded', function(done) {
                 models.Ping.count().then(function(countBeforePing) {
                     assert.equal(countBeforePing, 0);
@@ -195,11 +182,13 @@ describe('Discord Tests', function() {
                     });
                 });
             });
-        });
-    });
+
+        }); // End Ping tests
+    }); // End Database tests
 
     /**
      * We need to do cleanup so that the tests don't hang
+     * TODO: move test cleanup to a "tearDown" method?
      */
     describe('Test Cleanup', function() {
         it('Server closes properly', function() {
