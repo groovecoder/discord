@@ -24,6 +24,7 @@ describe('Discord Tests', function() {
     beforeEach(function() {
         // Truncate the Ping table before each test
         models.Ping.truncate();
+        models.Comment.truncate();
     });
 
     /**
@@ -168,6 +169,29 @@ describe('Discord Tests', function() {
             });
 
         }); // End Ping tests
+
+        describe('Comment', function() {
+            // Use the first recorded test fixture
+            var index = 1;
+            var manifest = testUtils.getFileContents(testUtils.recordedFixturesDir + index.toString(), 'manifest');
+
+            it('Comments are recorded in db', function(done) {
+                models.Comment.count().then(function(countBeforePR) {
+                    assert.equal(countBeforePR, 0);
+
+                    testUtils.setupNocksForManifest(manifest, index, done);
+
+                    // Kick the test off
+                    sendHookPayload(testUtils.recordedFixturesDir + index.toString(), function(error, response, body) {
+                        models.Comment.count().then(function(countAfterComment) {
+                            assert.equal(countAfterComment, 20);
+                        });
+                    });
+                });
+            });
+
+        }); // End Comment tests
+
     }); // End Database tests
 
     /**
