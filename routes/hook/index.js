@@ -80,9 +80,12 @@ function processPullRequest(destinationRepo, originRepo, originBranch, prNumber,
                     var commentJob = redisQueue.create('comment', {
                         commentURL: commentURL,
                         sha: currentCommit.sha,
+                        repo: destinationRepo,
+                        pr: prNumber,
                         filename: file.filename,
                         line: line,
-                        comment: comment
+                        comment: comment,
+                        incompatibleFeature: incompatibility.featureData.title
                     });
 
                     // If the comment is rejected, re-attempt several times with
