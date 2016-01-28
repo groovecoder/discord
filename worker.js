@@ -23,7 +23,7 @@ redisQueue.process('comment', function(job, done) {
     }
 
     setTimeout(function() {
-        commenter.postPullRequestComment(job.data.commentURL, job.data.comment, job.data.filename, job.data.sha, job.data.line, done);
+        commenter.postPullRequestComment(job.data.commentURL, job.data.sha, job.data.repo, job.data.pr, job.data.filename, job.data.line, job.data.comment, job.data.incompatibleFeature, done);
         lastCommentTimestamp = Date.now(); // Use a new, fresh timestamp
     }, waitRemaining);
 });
