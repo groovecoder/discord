@@ -3,6 +3,8 @@
 var fs = require('fs');
 var path = require('path');
 
+var nock = require('nock');
+
 var config = require('../lib/config');
 
 module.exports = {
@@ -32,4 +34,40 @@ module.exports = {
         return JSON.parse(fs.readFileSync(directory + '/' + fixture + '.json'));
     },
 
+    // Utility to setup the nock and lock variables into place
+    setupNock: function(url, item, requestType, payload, posts, done) {
+        var completedPosts = 0;
+
+        nock(this.githubHost).persist()[requestType](url).reply(function() {
+            if (requestType === 'post') completedPosts++;
+
+            if (completedPosts === posts) {
+                done();
+                nock.cleanAll(); // Cleanup so there's no interfering with other tests
+            }
+
+            return [200, payload];
+        });
+    },
+
+    // Utility to setup all nocks for a manifest
+    setupNocksForManifest: function(manifest, index, done) {
+        var item;
+        for (var url in manifest.urls) {
+            if (manifest.urls.hasOwnProperty(url)) {
+
+                item = manifest.urls[url];
+
+                this.setupNock(
+                    url,
+                    item,
+                    item.method.toLowerCase(),
+                    this.getFileContents(this.recordedFixturesDir + index.toString(), item.file),
+                    manifest.posts,
+                    done
+                );
+            }
+        }
+
+    }
 };
