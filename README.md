@@ -1,3 +1,8 @@
+## Note: Project Suspended
+This project has been on hiatus since Feb, 2016. While this README will still work, you should not expect any timely responses from the project maintainers.
+
+If you would like to take over maintenance of this project, please file an issue for us to discuss.
+
 [![Build Status](https://travis-ci.org/mdn/discord.svg?branch=master)](https://travis-ci.org/mdn/discord)
 
 Discord analyzes GitHub pull requests and adds comments about incompatible CSS.
