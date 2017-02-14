@@ -70,51 +70,36 @@ function processPullRequest(destinationRepo, originRepo, originBranch, prNumber,
                 processor.process(githubClient, originRepo, originBranch, file, discordConfig, function(incompatibility) {
                     // Callback for handling an incompatible line of code
                     var line = diff.lineToIndex(file.patch, incompatibility.usage.source.start.line);
-                    var filename = file.filename;
-                    var feature = incompatibility.featureData.title;
-                    var comment = feature + ' not supported by: ' + incompatibility.featureData.missing;
+                    var comment = incompatibility.featureData.title + ' not supported by: ' + incompatibility.featureData.missing;
 
-                    var alreadyCommented = commentExists(destinationRepo, prNumber, filename, line, feature);
-                    alreadyCommented.then(function(alreadyCommented) {
-                        if (!alreadyCommented) {
-                            var redisQueue = kue.createQueue({
-                                redis: config.redisURL
-                            });
+                    var redisQueue = kue.createQueue({
+                        redis: config.redisURL
+                    });
 
-                            // Create a Redis job that will submit the comment
-                            var commentJob = redisQueue.create('comment', {
-                                commentURL: commentURL,
-                                sha: currentCommit.sha,
-                                filename: filename,
-                                line: line,
-                                comment: comment
-                            });
+                    // Create a Redis job that will submit the comment
+                    var commentJob = redisQueue.create('comment', {
+                        commentURL: commentURL,
+                        sha: currentCommit.sha,
+                        filename: file.filename,
+                        line: line,
+                        comment: comment
+                    });
 
-                            // If the comment is rejected, re-attempt several times with
-                            // exponentially longer waits between each attempt.
-                            commentJob.attempts(config.commentAttempts);
-                            commentJob.backoff({
-                                type: 'exponential'
-                            });
+                    // If the comment is rejected, re-attempt several times with
+                    // exponentially longer waits between each attempt.
+                    commentJob.attempts(config.commentAttempts);
+                    commentJob.backoff({
+                        type: 'exponential'
+                    });
 
-                            // If the comment is rejected after several attempts, log an
-                            // error.
-                            commentJob.on('failed', function() {
-                                logger.error('Error posting comment to line ' + line + ' of ' + filename + ' in ' + originRepo + ' pull request #' + prNumber);
-                            });
+                    // If the comment is rejected after several attempts, log an
+                    // error.
+                    commentJob.on('failed', function() {
+                        logger.error('Error posting comment to line ' + line + ' of ' + file.filename + ' in ' + originRepo + ' pull request #' + prNumber);
+                    });
 
-                            commentJob.save(function(error) {
-                                if (error) return logger.error(error);
-                            });
-
-                            models.Comment.create({
-                                repo: destinationRepo,
-                                pr: prNumber,
-                                filename: filename,
-                                line: line,
-                                feature: feature
-                            });
-                        }
+                    commentJob.save(function(error) {
+                        if (error) return logger.error(error);
                     });
                 });
 
@@ -188,36 +173,6 @@ function getCommitDetail(repo, sha) {
             deferred.resolve(commitDetail);
         }
     });
-
-    return deferred.promise;
-}
-
-function commentExists(repo, prNumber, filename, line, feature) {
-    var deferred = Q.defer();
-
-    models.Comment.count({
-        where: {
-            repo: repo,
-            pr: prNumber,
-            filename: filename,
-            line: line,
-            feature: feature
-        }
-    }).then(
-        // Success callback (a matching comment was found)
-        function(count) {
-            if (count > 0) {
-                deferred.resolve(true);
-            } else {
-                deferred.resolve(false);
-            }
-        },
-
-        // Failure callback (no matching comments were found)
-        function(error) {
-            deferred.reject(error);
-        }
-    );
 
     return deferred.promise;
 }
